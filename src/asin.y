@@ -1,9 +1,5 @@
 /*****************************************************************************/
-/**  Ejemplo de BISON-I: S E M - 2          2018-2019 <jbenedi@dsic.upv.es> **/
-/*----------------------FOR EXECUTING:	-------------------------------------*/
-/*      					                             */
-/*      /ejemplo make						             */
-/*      /ejemplo ./cmc ejem1						     */
+/**  Analizador Sintactico - Bison          2018-2019 <angalga2@inf.upv.es> **/
 /*****************************************************************************/
 %{
 #include <stdio.h>
@@ -11,162 +7,169 @@
 #include "header.h"
 %}
 
-%token IGUAL_ MASIGUAL_ MENOSIGUAL_ PRODIGUAL_ DIVIGUAL_ 
-%token MAS_ MENOS_ POR_ DIV_ PORCENT_ INCRE_ DECRE_
-%token EQUALS_ NOTEQUALS_ MAYOR_ MENOR_ MAYORIGUAL_ MENORIGUAL_
-%token AND_ OR_ NOT_ TRUE_ FALSE_
-%token READ_ PRINT_ IF_ FOR_ ELSE_
-%token BOOL_ ENTERO_ 
-%token CTE_ ID_
-%token PARENI_ PAREND_ CORXETEI_ CORXETED_ CURLYI_ CURLYD_ SEMICOLON_
+%token ID_ CTE_
+%token MAS_ MENOS_ POR_ DIV_ ASIG_
+%token MENOR_ MAYOR_ MOD_ NOT_ AND_ OR_
+%token MASIGUAL_ MENOSIGUAL_ PORIGUAL_ DIVIGUAL_ IGUAL_ MENORIGUAL_ MAYORIGUAL_ DIFERENTE_
+%token INCREMENTO_ DECREMENTO_
+%token PARA_ PARC_ LLAVEA_ LLAVEC_ CORCHETEA_ CORCHETEC_ PUNTOCOMA_
+%token INT_ BOOL_ READ_ PRINT_ IF_ FOR_ TRUE_ FALSE_ ELSE_
 
 %%
 
-programa    : CURLYI_ secuenciaSentencias CURLYD_
-            ;
+programa
+    : LLAVEA_ secuenciaSentencias LLAVEC_
+    ;
 
-secuenciaSentencias : sentencia
-                    | secuenciaSentencias sentencia
-                    ;
+secuenciaSentencias
+    : sentencia
+    | secuenciaSentencias sentencia
+    ;
 
-sentencia   : declaracion
-            | instruccion
-            ;
+sentencia
+    : declaracion
+    | instruccion
+    ;
 
-declaracion : tipoSimple ID_ SEMICOLON_
-            | tipoSimple ID_ IGUAL_ constante SEMICOLON_
-            | tipoSimple ID_ CORXETEI_ CTE_ CORXETED_ SEMICOLON_
-            ;
+declaracion
+    : tipoSimple ID_ PUNTOCOMA_
+    | tipoSimple ID_ ASIG_ constante PUNTOCOMA_
+    | tipoSimple ID_ CORCHETEA_ CTE_ CORCHETEC_ PUNTOCOMA_
+    ;
 
-tipoSimple  : ENTERO_ 
-            | BOOL_
-            ;
+tipoSimple
+    : INT_
+    | BOOL_
+    ;
 
-instruccion : CURLYI_ listaIntrucciones CURLYD_
-            | instruccionEntradaSalida
-            | instruccionAsignacion
-            | instruccionSeleccion
-            | instruccionIteracion
-            ;
+instruccion
+    : LLAVEA_ listaInstrucciones LLAVEC_
+    | instruccionEntradaSalida
+    | instruccionAsignacion
+    | instruccionSeleccion
+    | instruccionIteracion
+    ;
 
-listaIntrucciones   : listaIntrucciones instruccion
-                    | /*Vacio*/
-                    ;
-
-instruccionAsignacion   : ID_ operadorAsignacion expresion SEMICOLON_
-                        | ID_ CORXETEI_ expresion CORXETED_ operadorAsignacion expresion SEMICOLON_
-                        ;
-
-instruccionEntradaSalida    : READ_ PARENI_ ID_ PAREND_ SEMICOLON_
-                            | PRINT_ PARENI_ expresion PAREND_ SEMICOLON_
-                            ;
-
-instruccionSeleccion    : IF_ PARENI_ expresion PAREND_ instruccion ELSE_ instruccion
-                        ;
+listaInstrucciones
+    : listaInstrucciones instruccion
+    |
+    ;
 
 
-instruccionIteracion : FOR_ PARENI_ expresionOpcional SEMICOLON_ expresion SEMICOLON_ expresionOpcional PAREND_ instruccion
-                     ;
+instruccionAsignacion
+    : ID_ operadorAsignacion expresion PUNTOCOMA_
+    | ID_ CORCHETEA_ expresion CORCHETEC_ operadorAsignacion expresion PUNTOCOMA_
+    ;
 
-expresionOpcional   : expresion
-                    | ID_ IGUAL_ expresion
-                    | /*Vacio*/
-                    ; 
+instruccionEntradaSalida
+    : READ_ PARA_ ID_ PARC_ PUNTOCOMA_
+    | PRINT_ PARA_ expresion PARC_ PUNTOCOMA_
+    ;
 
-expresion   : expresionIgualdad
-            | expresion operadorLogico expresionIgualdad
-            ;    
+instruccionSeleccion
+    : IF_ PARA_ expresion PARC_ instruccion ELSE_ instruccion
+    ;
 
-expresionIgualdad   : expresionRelacional
-                    | expresionIgualdad operadorIgualdad expresionRelacional
-                    ;
+instruccionIteracion
+    : FOR_ PARA_ expresionOpcional PUNTOCOMA_ expresion PUNTOCOMA_ expresionOpcional PARC_ instruccion
+    ;
 
-expresionRelacional : expresionAditiva
-                    | expresionRelacional operadorRelacional expresionAditiva
-                    ;
+expresionOpcional
+    : expresion
+    | ID_ ASIG_ expresion
+    |
+    ;
 
-expresionAditiva    : expresionMultiplicativa
-                    | expresionAditiva operadorAditivo expresionMultiplicativa
-                    ;
+expresion
+    : expresionIgualdad
+    | expresion operadorLogico expresionIgualdad
+    ;
 
-expresionMultiplicativa : expresionUnaria
-                        | expresionMultiplicativa operadorMultiplicativo expresionUnaria
-                        ;
+expresionIgualdad
+    : expresionRelacional
+    | expresionIgualdad operadorIgualdad expresionRelacional
+    ;
 
-expresionUnaria : expresionSufija
-                | operadorUnario expresionUnaria
-                | operadorIncremento ID_
-                ;
+expresionRelacional
+    : expresionAditiva
+    | expresionRelacional operadorRelacional expresionAditiva
+    ;
 
-expresionSufija : PARENI_ expresion PAREND_ 
-                | ID_ operadorIncremento
-                | ID_ CORXETEI_ expresion CORXETED_
-                | ID_
-                | constante
-                ;
+expresionAditiva
+    : expresionMultiplicativa
+    | expresionAditiva operadorAditivo expresionMultiplicativa
+    ;
 
-constante   : CTE_
-            | TRUE_
-            | FALSE_
-            ;
+expresionMultiplicativa
+    : expresionUnaria
+    | expresionMultiplicativa operadorMultiplicativo expresionUnaria
+    ;
 
-operadorAsignacion  : IGUAL_
-                    | MASIGUAL_
-                    | MENOSIGUAL_
-                    | PRODIGUAL_
-                    | DIVIGUAL_
-                    ;
+expresionUnaria
+    : expresionSufija
+    | operadorUnario expresionUnaria
+    | operadorIncremento ID_
+    ;
 
-operadorLogico  : AND_
-                | OR_
-                ;
+expresionSufija
+    : PARA_ expresion PARC_
+    | ID_ operadorIncremento
+    | ID_ CORCHETEA_ expresion CORCHETEC_
+    | ID_
+    | constante
+    ;
 
-operadorIgualdad    : EQUALS_
-                    | NOTEQUALS_
-                    ;
+constante
+    : CTE_
+    | TRUE_
+    | FALSE_
+    ;
 
-operadorRelacional  : MAYOR_
-                    | MENOR_
-                    | MAYORIGUAL_
-                    | MENORIGUAL_
-                    ;
+operadorAsignacion
+    : ASIG_
+    | MASIGUAL_
+    | MENOSIGUAL_
+    | PORIGUAL_
+    | DIVIGUAL_
+    ;
 
-operadorAditivo : MAS_
-                | MENOS_
-                ;
+operadorLogico
+    : AND_
+    | OR_
+    ;
 
-operadorMultiplicativo  : POR_
-                        | DIV_
-                        | PORCENT_
-                        ;
+operadorIgualdad
+    : IGUAL_
+    | DIFERENTE_
+    ;
 
-operadorUnario  : MAS_
-                | MENOS_
-                | NOT_
-                ;
+operadorRelacional
+    : MAYOR_
+    | MENOR_
+    | MAYORIGUAL_
+    | MENORIGUAL_
+    ;
 
-operadorIncremento  : INCRE_
-                    | DECRE_
-                    ;
+operadorAditivo
+    : MAS_
+    | MENOS_
+    ;
 
+operadorMultiplicativo
+    : POR_
+    | DIV_
+    | MOD_
+    ;
 
+operadorUnario
+    : MAS_
+    | MENOS_
+    | NOT_
+    ;
+
+operadorIncremento
+    : INCREMENTO_
+    | DECREMENTO_
+    ;
 
 %%
-
-void yyerror(const char *msg)
-/*  Tratamiento de errores.                                                  */
-{  fprintf(stderr, "\nError en la linea %d: %s\n", yylineno, msg); }
-
-
-int main (int argc, char **argv) 
-/* Gestiona la linea de comandos e invoca al analizador sintactico-semantico.*/
-{
-  if (argc==2)
-  if ((yyin = fopen (argv[1], "r")) == NULL) 
-    fprintf (stderr, "Fichero no valido <%s>\n", argv[1]);
-    else yyparse();
-  else fprintf (stderr, "Uso: %s <fichero>\n",argv[0]);
-
-  return (0);
-}
-
