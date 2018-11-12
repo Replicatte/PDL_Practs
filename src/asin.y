@@ -1,5 +1,5 @@
 /*****************************************************************************/
-/**  Analizador Sintactico - Bison          2018-2019 <angalga2@inf.upv.es> **/
+/**  Analizador Sintactico - Bison          2018-2019 <angalga2@inf.es> **/
 /*****************************************************************************/
 %{
 #include <stdio.h>
@@ -97,7 +97,7 @@ expresionRelacional
     ;
 
 expresionAditiva
-    : expresionMultiplicatupviva
+    : expresionMultiplicativa
     | expresionAditiva operadorAditivo expresionMultiplicativa
     ;
 
@@ -139,7 +139,7 @@ operadorLogico
     | OR_       { $$ = OP_OR}
     ;
 
-operadorIgualdad
+operadorIguald $$.valor = $1.valor * $3.valor;ad
     : IGUAL_        { $$ = OP_IGUAL}
     | DIFERENTE_    { $$ = OP_NOT}
     ;
