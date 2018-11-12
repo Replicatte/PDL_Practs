@@ -18,7 +18,7 @@
 %%
 
 programa
-    : LLAVEA_ secuenciaSentencias LLAVEC_
+    : LLAVEA_ secuenciaSentencias LLAVEC_ { printf("\nValor del programa?= %d\n",$2); }
     ;
 
 secuenciaSentencias
@@ -38,7 +38,7 @@ declaracion
     ;
 
 tipoSimple
-    : INT_
+    : INT_ 
     | BOOL_
     ;
 
@@ -120,9 +120,9 @@ expresionSufija
     ;
 
 constante
-    : CTE_
-    | TRUE_
-    | FALSE_
+    : CTE_ { $$.val = $<cent>1; $$.type = T_ENTERO;}
+    | TRUE_ { $$.val = $<cent>1; $$.type = T_BOOLEANO;}
+    | FALSE_ { $$.val = $<cent>1; $$.type = T_ENTERO;}
     ;
 
 operadorAsignacion
@@ -134,42 +134,42 @@ operadorAsignacion
     ;
 
 operadorLogico
-    : AND_
-    | OR_
+    : AND_ { $$ = $1}
+    | OR_ { $$ = $1}
     ;
 
 operadorIgualdad
-    : IGUAL_
-    | DIFERENTE_
+    : IGUAL_ { $$ = $1}
+    | DIFERENTE_ { $$ = $1}
     ;
 
 operadorRelacional
-    : MAYOR_
-    | MENOR_
-    | MAYORIGUAL_
-    | MENORIGUAL_
+    : MAYOR_ { $$ = $1}
+    | MENOR_ { $$ = $1}
+    | MAYORIGUAL_ { $$ = $1}
+    | MENORIGUAL_ { $$ = $1}
     ;
 
 operadorAditivo
-    : MAS_
-    | MENOS_
+    : MAS_ { $$ = $1}
+    | MENOS_ { $$ = $1}
     ;
 
 operadorMultiplicativo
-    : POR_
-    | DIV_
-    | MOD_
+    : POR_ { $$ = $1}
+    | DIV_ { $$ = $1}
+    | MOD_ { $$ = $1}
     ;
 
 operadorUnario
-    : MAS_
-    | MENOS_
-    | NOT_
+    : MAS_ { $$ = OP_MAS}
+    | MENOS_ { $$ = OP_MENOS}
+    | NOT_ { $$ = OP_NOT}
     ;
 
 operadorIncremento
-    : INCREMENTO_
-    | DECREMENTO_
+    : INCREMENTO_ { $$ = $1}
+    | DECREMENTO_ { $$ = $1}
     ;
 
 %%
