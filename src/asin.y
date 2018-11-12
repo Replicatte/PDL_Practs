@@ -1,5 +1,5 @@
 /*****************************************************************************/
-/**  Analizador Sintactico - Bison          2018-2019 <angalga2@inf.upv.es> **/
+/**  Analizador Sintactico - Bison          2018-2019 <angalga2@inf.es> **/
 /*****************************************************************************/
 %{
 #include <stdio.h>
@@ -16,6 +16,7 @@
 %token INT_ BOOL_ READ_ PRINT_ IF_ FOR_ TRUE_ FALSE_ ELSE_
 
 %%
+
 
 programa
     : LLAVEA_ secuenciaSentencias LLAVEC_ { printf("\nValor del programa?= %d\n",$2); }
@@ -120,56 +121,56 @@ expresionSufija
     ;
 
 constante
-    : CTE_ { $$.val = $<cent>1; $$.type = T_ENTERO;}
-    | TRUE_ { $$.val = $<cent>1; $$.type = T_BOOLEANO;}
-    | FALSE_ { $$.val = $<cent>1; $$.type = T_ENTERO;}
+    : CTE_      { $$.val = $<cent>1; $$.type = T_ENTERO;}
+    | TRUE_     { $$.val = $<cent>1; $$.type = T_LOGICO;}
+    | FALSE_    { $$.val = $<cent>1; $$.type = T_LOGICO;}
     ;
 
 operadorAsignacion
-    : ASIG_
-    | MASIGUAL_
-    | MENOSIGUAL_
-    | PORIGUAL_
-    | DIVIGUAL_
+    : ASIG_         { $$ = OP_ASIG}
+    | MASIGUAL_     { $$ = OP_MASIGUAL}
+    | MENOSIGUAL_   { $$ = OP_MENOSIGUAL}
+    | PORIGUAL_     { $$ = OP_PORIGUAL}
+    | DIVIGUAL_     { $$ = OP_DIVIGUAL}
     ;
 
 operadorLogico
-    : AND_ { $$ = $1}
-    | OR_ { $$ = $1}
+    : AND_      { $$ = OP_AND}
+    | OR_       { $$ = OP_OR}
     ;
 
-operadorIgualdad
-    : IGUAL_ { $$ = $1}
-    | DIFERENTE_ { $$ = $1}
+operadorIguald $$.valor = $1.valor * $3.valor;ad
+    : IGUAL_        { $$ = OP_IGUAL}
+    | DIFERENTE_    { $$ = OP_NOT}
     ;
 
 operadorRelacional
-    : MAYOR_ { $$ = $1}
-    | MENOR_ { $$ = $1}
-    | MAYORIGUAL_ { $$ = $1}
-    | MENORIGUAL_ { $$ = $1}
+    : MAYOR_        { $$ = OP_MAYOR}
+    | MENOR_        { $$ = OP_MENOR}
+    | MAYORIGUAL_   { $$ = OP_MAYORIG}
+    | MENORIGUAL_   { $$ = OP_MENORIG}
     ;
 
 operadorAditivo
-    : MAS_ { $$ = $1}
-    | MENOS_ { $$ = $1}
+    : MAS_      { $$ = OP_SUMAR}
+    | MENOS_    { $$ = OP_RESTAR}
     ;
 
 operadorMultiplicativo
-    : POR_ { $$ = $1}
-    | DIV_ { $$ = $1}
-    | MOD_ { $$ = $1}
+    : POR_      { $$ = OP_MULTIPLICAR}
+    | DIV_      { $$ = OP_DIVIDIR}
+    | MOD_      { $$ = OP_MODULO}
     ;
 
 operadorUnario
-    : MAS_ { $$ = OP_MAS}
-    | MENOS_ { $$ = OP_MENOS}
-    | NOT_ { $$ = OP_NOT}
+    : MAS_      { $$ = OP_MAS}
+    | MENOS_    { $$ = OP_MENOS}
+    | NOT_      { $$ = OP_NOT}
     ;
 
 operadorIncremento
-    : INCREMENTO_ { $$ = $1}
-    | DECREMENTO_ { $$ = $1}
+    : INCREMENTO_ { $$ = OP_INCREMENENTO}
+    | DECREMENTO_ { $$ = OP_DECREMENTO}
     ;
 
 %%
