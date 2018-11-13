@@ -17,7 +17,7 @@ Restricciones:
 - No existe conversion de tipos entre int y bol.
 
 - Las variables de tipo simple se pueden inicializar en su declaración. En ese caso, el
-  tipo de la declaraci ́on debe ser identico al tipo de la expresi ́on constante.
+  tipo de la declaraci ́on debe ser identico al tipo de la expresión constante.
 
 - Los  ́ındices de los vectores van de 0 a cte-1, siendo cte el numero de elementos definido en su declaracion. 
   El numero de elementos de un vector debe ser un entero positivo.
