@@ -33,13 +33,36 @@ sentencia
     ;
 
 declaracion
-    : tipoSimple ID_ PUNTOCOMA_
+    : tipoSimple ID_ PUNTOCOMA_ 
+    {
+        if (!insTSimpleTDS($2,$1,dvar))
+            yyerror ("Identificador repetido");
+        else{dvar += TALLA_TIPO_SIMPLE;}}
     | tipoSimple ID_ ASIG_ constante PUNTOCOMA_
-    | tipoSimple ID_ CORCHETEA_ CTE_ CORCHETEC_ PUNTOCOMA_
+    {
+        if ($1 != $4.type)
+           yyerror ("Error de Tipos");
+        else{
+            if (!insTSimpleTDS($2,$1,dvar))
+                yyerror ("Identificador repetido");
+            else{dvar += TALLA_TIPO_SIMPLE;}    
+        } 
+    }
+    | tipoSimple ID_ CORCHETEA_ CTE_ CORCHETEC_ PUNTOCOMA_ 
+    {
+        int numelem = $4;
+        if ($4 <= 0)
+            {
+            yyerror("Talla inapropiada del array");
+            numelem = 0;
+            }
+        if ( ! insTVectorTDS($2, TARRAY, dvar, $1, numelem) )
+            yyerror ("Identificador repetido");
+        else dvar += numelem * TALLA_TIPO_SIMPLE;}
     ;
 
 tipoSimple
-    : INT_ 
+    : INT_ //{$$ = tipo_entero}
     | BOOL_
     ;
 
@@ -96,7 +119,7 @@ expresionRelacional
     | expresionRelacional operadorRelacional expresionAditiva
     ;
 
-expresionAditiva
+expresionAditiva pdl
     : expresionMultiplicativa
     | expresionAditiva operadorAditivo expresionMultiplicativa
     ;
@@ -139,7 +162,7 @@ operadorLogico
     | OR_       { $$ = OP_OR}
     ;
 
-operadorIguald $$.valor = $1.valor * $3.valor;ad
+operadorIgualdad $$.valor = $1.valor * $3.valor;ad
     : IGUAL_        { $$ = OP_IGUAL}
     | DIFERENTE_    { $$ = OP_NOT}
     ;

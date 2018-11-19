@@ -9,7 +9,7 @@
 /****************************************************** Constantes generales */
 #define TRUE  1
 #define FALSE 0
-#define TIPO_SIMPLE 1
+#define TALLA_TIPO_SIMPLE 1
 /***************************************************** Constantes de Operacion*/
 #define OP_ASIG 0
 #define OP_MASIGUAL 1
