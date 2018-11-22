@@ -2,7 +2,6 @@
 Desarollo del entregable de PDL
 
 REQUISITOS MINIMOS:
-
     ✔[DONE]
 - La talla de los tipos simples, entero y logico, debe definirse, por medio de la constante 
   talla tipo simple = 1,  en el fichero header.h del directorio include.(DECLARADO) 
