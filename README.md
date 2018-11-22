@@ -2,11 +2,12 @@
 Desarollo del entregable de PDL
 
 REQUISITOS MINIMOS:
-    ✔[DONE]
+
+✔[DONE]
 - La talla de los tipos simples, entero y logico, debe definirse, por medio de la constante 
   talla tipo simple = 1,  en el fichero header.h del directorio include.(DECLARADO) 
 
-    ✔[DONE]
+✔[DONE]
 - El tipo lógico, bol, se representa numéricamente como un entero: con el valor 0, para
   el caso falso, y 1, para el caso verdad.
 
