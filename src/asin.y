@@ -109,12 +109,12 @@ instruccionEntradaSalida
         if (simb.tipo == T_ERROR)
             yyerror("Tipo no declarado");
         else if (simb.tipo != T_ENTERO)
-            yyerror("La funcion REhttps://github.com/Replicatte/PDL_PractsAD esperaba una variable entera");
+            yyerror("READ necesita Tipo Entero");
         }
     | PRINT_ PARA_ expresion PARC_ PUNTOCOMA_
         {
         if ($3.tipo != T_ENTERO)
-            yyerror("La funcion PRINT esperaba una variable entera");
+            yyerror("PRINT necesita Tipo Entero");
         }
     ;
 
