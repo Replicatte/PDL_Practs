@@ -85,7 +85,22 @@ listaInstrucciones
 
 instruccionAsignacion
     : ID_ operadorAsignacion expresion PUNTOCOMA_
+	{ 	SIMB sim = obtenerTDS($1);
+		if (sim.tipo == T_ERROR) 
+			yyerror("Objeto no declarado");
+		else if (!((sim.tipo == $3 == T_ENTERO)||(sim.tipo == $3 == T_LOGICO)))
+			yyerror("Error de tipos en la 'instruccionAsignacion'");
+		else $$ = sim.tipo;
+	}
     | ID_ CORCHETEA_ expresion CORCHETEC_ operadorAsignacion expresion PUNTOCOMA_
+	{
+		SIMB sim = obtenerTDS($1);
+		if (sim.tipo == T_ERROR) 
+			yyerror("Objeto no declarado");
+		else if if (!((sim.tipo == $6 == T_ENTERO)||(sim.tipo == $6 == T_LOGICO)))
+			yyerror("Error de tipos en la 'instruccionAsignacion'");
+		else $$ = sim.tipo;
+	}
     ;
 
 instruccionEntradaSalida
@@ -94,7 +109,7 @@ instruccionEntradaSalida
         if (simb.tipo == T_ERROR)
             yyerror("Tipo no declarado");
         else if (simb.tipo != T_ENTERO)
-            yyerror("La funcion READ esperaba una variable entera");
+            yyerror("La funcion REhttps://github.com/Replicatte/PDL_PractsAD esperaba una variable entera");
         }
     | PRINT_ PARA_ expresion PARC_ PUNTOCOMA_
         {
@@ -111,17 +126,39 @@ instruccionSeleccion
 
 instruccionIteracion
     : FOR_ PARA_ expresionOpcional PUNTOCOMA_ expresion PUNTOCOMA_ expresionOpcional PARC_ instruccion
+	{
+		{ if ($3.tipo != T_ERROR && $3.tipo != T_LOGICO)
+			yyerror("La Guarda del bucle for tiene que ser logica"); }
+	}
     ;
 
 expresionOpcional
-    : expresion
-    | ID_ ASIG_ expresion
+    : expresion	{ $$.tipo = $1.tipo; $$.valor = $1.valor; $$.valid = $1.valid; } /* No estoy seguro de este , Adrian*/
+    | ID_ ASIG_ expresion /*Pegarle un vistazo ha esta expresion que no se me ocurre como puede ser (A = True && False) una cosa asi*/
     |
     ;
 
 expresion
-    : expresionIgualdad
-    | expresion operadorLogico expresionIgualdad
+    : expresionIgualdad { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.valid = $1.valid; } /* No estoy seguro de este , Adrian*/
+    | expresion operadorLogico expresionIgualdad 
+		{
+            $$.tipo = T_ERROR;
+            if ( $1.tipo != T_ERROR && $3.tipo != T_ERROR )
+            {
+                if ( $1.tipo != $3.tipo ) {
+                    yyerror( "Los tipos no coinciden en la expresion" );                
+                } else {
+                    $$.tipo = T_LOGICO;
+                    if ($1.valid == TRUE && $3.valid == TRUE) {
+                        if ($2 == OP_OR)
+                            $$.valor = $1.valor || $3.valor ? TRUE : FALSE;
+                        else if ($2 == OP_AND)
+                            $$.valor = $1.valor && $3.valor ? TRUE : FALSE;
+                        $$.valid = TRUE;
+                    } else $$.valid = FALSE;
+                }
+            }
+        }/* No estoy seguro de este , Adrian*/
     ;
 
 expresionIgualdad
@@ -152,16 +189,90 @@ expresionIgualdad
 expresionRelacional
     : expresionAditiva { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.valid = $1.valid; }
     | expresionRelacional operadorRelacional expresionAditiva
+	{
+		$$.tipo = T_ERROR;
+		if ($1.tipo != T_ERROR && $3.tipo != T_ERROR){
+			if ($1.tipo != $3.tipo) {
+				yyerror("Los tipos de la expresion Relacional son diferentes");
+			}
+			else if ($1.tipo = T_LOGICO){
+				yyerror("La expresion relacional con expresion logica, las expresiones relacionales solo trabajan con Enteros")
+			}else{
+				$$.tipo = T_LOGICO;
+				if (($1.valid && $3.valid) == TRUE){
+					if ($2 == OP_MAYOR)
+						$$.valor = $1.valor > $3.valor ? TRUE : FALSE;
+					if ($2 == OP_MENOR)
+						$$.valor = $1.valor < $3.valor ? TRUE : FALSE;
+					if ($2 == OP_MAYORIG)
+						$$.valor = $1.valor >= $3.valor ? TRUE : FALSE;
+					if ($2 == OP_MENORIG)
+						$$.valor = $1.valor <= $3.valor ? TRUE : FALSE;
+					$$.valid = TRUE;			
+				}else{$$.valid = FALSE;}			
+			}
+		}
+	}
     ;
 
 expresionAditiva 
     : expresionMultiplicativa { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.valid = $1.valid; }
     | expresionAditiva operadorAditivo expresionMultiplicativa
+	{
+		$$.tipo = T_ERROR;
+        if ($1.tipo != T_ERROR && $3.tipo != T_ERROR) {
+            if ($1.tipo != $3.tipo) {
+                yyerror("Los tipos de la expresion additiva no son iguales");
+            } else if ($1.tipo != T_ENTERO) {
+                yyerror("La Operacion Aditiva solo trabaja con tipo Entero");
+            } else {
+                $$.tipo = T_ENTERO;
+                if (($1.valid && $3.valid) == TRUE) {
+                    if ($2 == OP_SUMAR)
+                        $$.valor = $1.valor + $3.valor;
+                    else if ($2 == OP_RESTAR)
+                        $$.valor = $1.valor - $3.valor;
+                    $$.valid = TRUE;
+                } else $$.valid = FALSE;
+            }
+		}	
+	}
     ;
 
 expresionMultiplicativa
     : expresionUnaria { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.valid = $1.valid; }
     | expresionMultiplicativa operadorMultiplicativo expresionUnaria
+	{ $$.tipo = T_ERROR;
+        if ($1.tipo != T_ERROR && $3.tipo != T_ERROR) {
+            if ($1.tipo != $3.tipo) {
+                yyerror("Tipos no coinciden en operacion multiplicativa");
+            } else if ($1.tipo != T_ENTERO) {
+                yyerror("Operacion multiplicativa solo acepta argumentos enteros");
+            } else {
+                $$.tipo = T_ENTERO;
+                if (($1.valid && $3.valid) == TRUE) {
+                    if ($2 == OP_MULTIPLICAR)
+                        $$.valor = $1.valor * $3.valor;
+                    if ($2 == OP_DIVIDIR) {
+                        if ($3.valor == 0) {
+                            $$.tipo = T_ERROR;
+                            yyerror("No se puede dividir entre 0");
+                        } else {
+                            $$.valor = $1.valor / $3.valor;
+                        }
+                    }if ($2 == OP_MOD) {
+                        if ($3.valor == 0) {
+                            $$.tipo = T_ERROR;
+                            yyerror("No se puede dividir entre 0, y por tanto la operacion Modulo tampoco");
+                        } else {
+                            $$.valor = $1.valor % $3.valor;
+                        }
+                    }
+                    $$.valid = TRUE;
+                } else $$.valid = FALSE;
+            }
+		} 
+	}
     ;
 
 expresionUnaria
