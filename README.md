@@ -17,12 +17,12 @@ REQUISITOS MINIMOS:
 ✔[DONE]
 - El compilador solo trabaja con constantes enteras. Si el analizador lexico encuentra
   una constante real en el programa debe devolver su valor entero truncado. (CASO PARTICULAR -> condicionar @constante?)
-  
+✔[DONE]
 - No existe conversion de tipos entre int y bol. (COMPROBACIÓN DE TIPOS)
-
+✔[DONE]
 - Todas las variables deben declararse antes de ser utilizadas.(EMPLEAR TABLA DE SIMBOLOS?)
-
-- ?[¿DONE?(Mirar ExpresionOpcional)] Las variables de tipo simple se pueden inicializar en su declaración. En ese caso, el
+✔[DONE]
+- Las variables de tipo simple se pueden inicializar en su declaración. En ese caso, el
   tipo de la declaración debe ser identico al tipo de la expresión constante.
 
 - Los  ́ındices de los vectores van de 0 a cte-1, siendo cte el numero de elementos definido en su declaracion. 
