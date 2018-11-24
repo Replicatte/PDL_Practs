@@ -1,5 +1,9 @@
 /*****************************************************************************/
-/**  Analizador Sintactico - Bison          2018-2019 <angalga2@inf.upv.es> **/
+/**  Analizador Sintactico - Bison          2018-2019                       **/
+/** ALUMNOS:                                                                **/
+/** Antonio Gallego Gallego                          <angalga2@inf.upv.es>  **/
+/** Adrian Tendero Lara                              <adtenla@inf.upv.es>   **/
+/** Jordi                                                                   **/
 /*****************************************************************************/
 %{
 #include <stdio.h>
@@ -135,9 +139,9 @@ instruccionIteracion
     ;
 
 expresionOpcional
-    : expresion	{ $$.tipo = $1.tipo; $$.valor = $1.valor; $$.valid = $1.valid; } /* No estoy seguro de este , Adrian*/
-    | ID_ ASIG_ expresion 	{ 	
-
+    : expresion	{ $$.tipo = $1.tipo; $$.valor = $1.valor; $$.valid = $1.valid; }
+    | ID_ ASIG_ expresion
+    { 	
         SIMB s = obtenerTDS($1);
 		if (s.tipo == T_ERROR) 
 			yyerror("Objeto no declarado");
@@ -150,7 +154,7 @@ expresionOpcional
     ;
 
 expresion
-    : expresionIgualdad { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.valid = $1.valid; } /* No estoy seguro de este , Adrian // JAG Creo que esta bien*/
+    : expresionIgualdad { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.valid = $1.valid; } 
     | expresion operadorLogico expresionIgualdad 
 		{
             $$.tipo = T_ERROR;
@@ -289,7 +293,52 @@ expresionMultiplicativa
 expresionUnaria
     : expresionSufija { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.valid = $1.valid; }
     | operadorUnario expresionUnaria
+    { 
+        $$.tipo = T_ERROR;
+        $$.valid = $2.valid;
+        if ($2.tipo != T_ERROR){
+            if $2.tipo == T_ENTERO){
+                if ($1 == OP_NOT){
+                    yyerror("No se puede usar '!' en enteros");
+                }else if ($2.valid == TRUE){
+                    $$.tipo = T_ENTERO;
+                    if ($1 =  OP_MAS) {
+                        $$.valor = $2.valor;
+                    }
+                    if ($1 = OP_MENOS) {
+                        $$.valor = -$2.valor;
+                    }
+                }
+            }
+            if ($2.tipo == T_LOGICO){
+                if($1 == OP_NOT && $2.valid){
+                    $$.tipo=T_LOGICO;
+                    if($2.valor == FALSE){
+                        $$.valor = TRUE;
+                    }else{
+                        $$.valor = FALSE;
+                    }
+                }else{
+                    yyerror("Expresion Logica con Operacion Entera Invalida")
+                }
+            }
+        }
+    }
     | operadorIncremento ID_
+    {
+        SIMB simb = obtenerTDS($2);
+        $$.tipo = T_ERROR;
+        if (simb.tipo == T_ERROR){
+            yyerror("Variable no declarada")
+        }
+        else if (simb.tipo == T_ARRAY){
+            yyerror("La variable es un vector sin indice")
+        }
+        else{
+            $$.tipo = simb.tipo;
+        }
+        $$.valid = FALSE;
+    }
     ;
 
 expresionSufija
