@@ -14,7 +14,7 @@ REQUISITOS MINIMOS:
   el caso falso, y 1, para el caso verdad.
 
 
-
+✔[DONE]
 - El compilador solo trabaja con constantes enteras. Si el analizador lexico encuentra
   una constante real en el programa debe devolver su valor entero truncado. (CASO PARTICULAR -> condicionar @constante?)
   

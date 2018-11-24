@@ -85,30 +85,32 @@ listaInstrucciones
 
 instruccionAsignacion
     : ID_ operadorAsignacion expresion PUNTOCOMA_
-	{ 	SIMB sim = obtenerTDS($1);
-		if (sim.tipo == T_ERROR) 
+	{ 	SIMB s = obtenerTDS($1);
+		if (s.tipo == T_ERROR) 
 			yyerror("Objeto no declarado");
-		else if (!((sim.tipo == $3 == T_ENTERO)||(sim.tipo == $3 == T_LOGICO)))
+		else if (!((s.tipo == $3 == T_ENTERO)||(s.tipo == $3 == T_LOGICO)))
 			yyerror("Error de tipos en la 'instruccionAsignacion'");
-		else $$ = sim.tipo;
+		else $$ = s.tipo;
 	}
     | ID_ CORCHETEA_ expresion CORCHETEC_ operadorAsignacion expresion PUNTOCOMA_
 	{
-		SIMB sim = obtenerTDS($1);
-		if (sim.tipo == T_ERROR) 
+		SIMB s = obtenerTDS($1);
+		if (s.tipo == T_ERROR) 
 			yyerror("Objeto no declarado");
-		else if if (!((sim.tipo == $6 == T_ENTERO)||(sim.tipo == $6 == T_LOGICO)))
+		else if if (!((s.tipo == $6 == T_ENTERO)||(s.tipo == $6 == T_LOGICO)))
 			yyerror("Error de tipos en la 'instruccionAsignacion'");
-		else $$ = sim.tipo;
+		else {
+            $$ = s.tipo;
+        }
 	}
     ;
 
 instruccionEntradaSalida
     : READ_ PARA_ ID_ PARC_ PUNTOCOMA_
-        { SIM simb = obtenerTDS($3);
-        if (simb.tipo == T_ERROR)
+        { SIMB s = obtenerTDS($3);
+        if (s.tipo == T_ERROR)
             yyerror("Tipo no declarado");
-        else if (simb.tipo != T_ENTERO)
+        else if (s.tipo != T_ENTERO)
             yyerror("READ necesita Tipo Entero");
         }
     | PRINT_ PARA_ expresion PARC_ PUNTOCOMA_
@@ -134,12 +136,21 @@ instruccionIteracion
 
 expresionOpcional
     : expresion	{ $$.tipo = $1.tipo; $$.valor = $1.valor; $$.valid = $1.valid; } /* No estoy seguro de este , Adrian*/
-    | ID_ ASIG_ expresion /*Pegarle un vistazo ha esta expresion que no se me ocurre como puede ser (A = True && False) una cosa asi*/
+    | ID_ ASIG_ expresion 	{ 	
+
+        SIMB s = obtenerTDS($1);
+		if (s.tipo == T_ERROR) 
+			yyerror("Objeto no declarado");
+		else if (!((s.tipo == $3 == T_ENTERO)||(s.tipo == $3 == T_LOGICO)))
+			yyerror("Error de tipos en la 'instruccionAsignacion'");
+		else $$ = s.tipo;
+	}
+/*Pegarle un vistazo ha esta expresion que no se me ocurre como puede ser (A = True && False) una cosa asi*/
     |
     ;
 
 expresion
-    : expresionIgualdad { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.valid = $1.valid; } /* No estoy seguro de este , Adrian*/
+    : expresionIgualdad { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.valid = $1.valid; } /* No estoy seguro de este , Adrian // JAG Creo que esta bien*/
     | expresion operadorLogico expresionIgualdad 
 		{
             $$.tipo = T_ERROR;
@@ -158,7 +169,7 @@ expresion
                     } else $$.valid = FALSE;
                 }
             }
-        }/* No estoy seguro de este , Adrian*/
+        }
     ;
 
 expresionIgualdad
@@ -283,10 +294,36 @@ expresionUnaria
 
 expresionSufija
     : PARA_ expresion PARC_ { $$.tipo = $2.tipo; $$.valor = $2.valor; $$.valid = $2.valid; }
-    | ID_ operadorIncremento
+    | ID_ operadorIncremento  
+        {
+            $$.tipo = T_ERROR;
+            SIMB s = obtenerTDS($1);
+            if(s.tipo == T_ERROR){
+                yyerror("Variable no declarada.");
+            }else if (s.TIPO == T_ARRAY){
+                yyerror("ArraySinIndice");
+            }else{
+                $$.tipo = s.tipo;
+                $$.valid = FALSE;
+            }
+        }
     | ID_ CORCHETEA_ expresion CORCHETEC_
     | ID_
-    | constante
+    {
+        SIMB s = obtenerTDS($1);
+        $$.tipo = T_ERROR;
+        $$.valid = FALSE;
+        if(s.tipo == T_ERROR){
+            yyerror("Variable no declarada.");    
+        }
+        
+    }
+    | constante 
+    {
+         $$.valor = (int)$1.valor;//Casting para truncar el valor(da igual el tipo)
+         $$.tipo  = $1.tipo;
+         $$.valid = $1.valid;
+    }
     ;
 
 constante

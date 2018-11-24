@@ -6,42 +6,44 @@
 #ifndef _HEADER_H
 #define _HEADER_H
 
-/****************************************************** Constantes generales */
+/* General */
 #define TRUE  1
 #define FALSE 0
 #define TALLA_TIPO_SIMPLE 1
-/***************************************************** Constantes de Operacion*/
-#define OP_ASIG 0
-#define OP_MASIGUAL 1
-#define OP_MENOSIGUAL 2
-#define OP_PORIGUAL 3
-#define OP_DIVIGUAL 4
-/***************************** OP_LOGICAS *******************/
-#define OP_AND 0
-#define OP_OR 1
+/* Constantes Operacionales */
+#define OP_ASIG 2
+#define OP_MASIGUAL 3
+#define OP_MENOSIGUAL 4
+#define OP_PORIGUAL 5
+#define OP_DIVIGUAL 6
+/* ****************************OP_LOGICAS ************** */
+#define OP_AND 7
+#define OP_OR 8
 /****************************OP_IGUALDAD **************/
-#define OP_IGUAL 0
-#define OP_NOT 1
+#define OP_IGUAL 9
+#define OP_NOT 10
 /************************ RELACIONAL*************/
-#define OP_MAYOR 0
-#define OP_MENOR 1
-#define OP_MAYORIG 2
-#define OP_MENORIG 3
+#define OP_MAYOR 11
+#define OP_MENOR 12
+#define OP_MAYORIG 13
+#define OP_MENORIG 14
 /**************** OP_ARITMETICAS *******/
-#define OP_SUMAR 0
-#define OP_RESTAR 1
-#define OP_MULTIPLICAR 2
-#define OP_DIVIDIR 3
-#define OP_MODULO 4
+#define OP_SUMAR 15
+#define OP_RESTAR 16
+#define OP_MULTIPLICAR 17
+#define OP_DIVIDIR 18
+#define OP_MODULO 19
 /************** OPERADORES UNARIOS ******/
-#define OP_MAS 0
-#define OP_MENOS 1
-#define OP_NOT 2
+#define OP_MAS 20
+#define OP_MENOS 21
+#define OP_NOT 22
 /***************OP_INCREMENTOS*******/
-#define OP_INCREMENTO 1
-#define OP_DECREMENTO 0
+#define OP_INCREMENTO 23
+#define OP_DECREMENTO 24
 /************* DEFINICIONES ERRORES *******/
-//PARA HACER!!
+
+/* TODO JAG: Necesario? Se pueden escribir directamente sobre la funcion yyerror aunque se reutilizen */
+
 /******** ESTRUCTURA PARA LAS EXPRESIONES *********/
 typedef struct exp {
     int valor;
