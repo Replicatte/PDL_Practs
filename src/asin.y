@@ -108,7 +108,7 @@ instruccionAsignacion
 	{ 	SIMB s = obtenerTDS($1);
 		if (s.tipo == T_ERROR) 
 			yyerror("Objeto no declarado");
-		else if ( !((s.tipo != T_ERROR) && (s.tipo = $3.tipo)) )
+		else if ( !((s.tipo != T_ERROR) && (s.tipo == $3.tipo)) )
 			yyerror("Error de tipos en la 'instruccionAsignacion'");
 		else $$ = s.tipo;
 	}
@@ -117,8 +117,8 @@ instruccionAsignacion
 		SIMB s = obtenerTDS($1);
 		if (s.tipo == T_ERROR) 
 			yyerror("Objeto no declarado");
-		else if ( !((s.tipo != T_ERROR) && (s.telem = $6.tipo)) )
-			yyerror("Error de tipos en la 'instruccionAsignacion'");
+		else if ( !((s.telem == $6.tipo) && ($3.tipo == T_ENTERO) ) )
+			yyerror("Error del array en la 'instruccionAsignacion'");
 		else {
             $$ = s.telem;
         }
@@ -149,8 +149,8 @@ instruccionSeleccion
 instruccionIteracion
     : FOR_ PARA_ expresionOpcional PUNTOCOMA_ expresion PUNTOCOMA_ expresionOpcional PARC_ instruccion
 	{
-		{ if ($5.tipo != T_ERROR && $5.tipo != T_LOGICO)
-			yyerror("La Guarda del bucle for tiene que ser logica"); }
+		if ($5.tipo != T_ERROR && $5.tipo != T_LOGICO)
+			yyerror("La Guarda del bucle for tiene que ser logica");
 	}
     ;
 
@@ -166,7 +166,7 @@ expresionOpcional
 		else $$.tipo = s.tipo;
 	}
 /*Pegarle un vistazo ha esta expresion que no se me ocurre como puede ser (A = True && False) una cosa asi*/
-    | {$$.tipo = T_LOGICO; }
+    | { $$.tipo = T_LOGICO; }
     ;
 
 expresion
