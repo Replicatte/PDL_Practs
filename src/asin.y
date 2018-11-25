@@ -3,7 +3,7 @@
 /** ALUMNOS:                                                                **/
 /** Antonio Gallego Gallego                          <angalga2@inf.upv.es>  **/
 /** Adrian Tendero Lara                              <adtenla@inf.upv.es>   **/
-/** Jordi                                            <>                   **/
+/** Jordi Almendros Granero                      <joralgra@etsiamn.upv.es>  **/
 /*****************************************************************************/
 %{
 #include <stdio.h>
@@ -108,7 +108,7 @@ instruccionAsignacion
 	{ 	SIMB s = obtenerTDS($1);
 		if (s.tipo == T_ERROR) 
 			yyerror("Objeto no declarado");
-		else if (!( (s.tipo == $3.tipo && s.tipo == T_ENTERO)||(s.tipo == $3.tipo && s.tipo == T_LOGICO) ))
+		else if ( (!(s.tipo == $3.tipo && s.tipo == T_ENTERO)||!(s.tipo == $3.tipo && s.tipo == T_LOGICO)) )
 			yyerror("Error de tipos en la 'instruccionAsignacion'");
 		else $$ = s.tipo;
 	}
@@ -131,7 +131,7 @@ instruccionEntradaSalida
         if (s.tipo == T_ERROR)
             yyerror("Tipo no declarado");
         else if (s.tipo != T_ENTERO)
-            yyerror("READ necesita Tipo Entero");
+            yyerror("READ es para Tipo Entero");
         }
     | PRINT_ PARA_ expresion PARC_ PUNTOCOMA_
         {
@@ -250,7 +250,7 @@ expresionAditiva
     : expresionMultiplicativa { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.valid = $1.valid; }
     | expresionAditiva operadorAditivo expresionMultiplicativa
 	{
-		$$.tipo = T_ERROR;
+	$$.tipo = T_ERROR;
         if ($1.tipo != T_ERROR && $3.tipo != T_ERROR) {
             if ($1.tipo != $3.tipo) {
                 yyerror("Los tipos de la expresion additiva no son iguales");
@@ -296,6 +296,7 @@ expresionMultiplicativa
                             $$.tipo = T_ERROR;
                             yyerror("No se puede dividir entre 0, y por tanto la operacion Modulo tampoco");
                         } else {
+
                             $$.valor = $1.valor % $3.valor;
                         }
                     }
@@ -402,11 +403,11 @@ expresionSufija
     }
     | constante 
     {
-	/*
+	
          $$.valor = (int)$1.valor; //Casting para truncar el valor(da igual el tipo)
          $$.tipo  = $1.tipo;
          $$.valid = $1.valid;
-	*/
+	
     }
     ;
 

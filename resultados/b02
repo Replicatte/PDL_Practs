@@ -1,0 +1,25 @@
+// Ejemplo (sin sentido) con opeadores logicos: 5 errores
+{ int a[20];
+  bool b;
+  int  c = 0;
+  int  b;
+Error en la linea 5: Identificador repetido
+                         // Identificador repetido
+
+  b = ((a[2] > 0) && true) || c;
+Error en la linea 7: Error de tipos en la 'instruccionAsignacion'
+  // Error en "expresion logica"
+  b = ! (a[2] * 10)
+Error en la linea 8: No se puede usar '!' en enteros
+;
+Error en la linea 8: Error de tipos en la 'instruccionAsignacion'
+              // Error en "expresion unaria"
+  b = a[7] == b;
+Error en la linea 9: Error de tipos en la 'instruccionAsignacion'
+                 // Error en "expresion de igualdad"
+  if (a[7] < b )                 // Error en "expresion de relacional"
+    a[7] = c;
+Error en la linea 11: Error de tipos en la 'instruccionAsignacion'
+
+  else {}
+}

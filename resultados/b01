@@ -1,0 +1,25 @@
+// Ejemplo (sin sentido) con vectores: 6 errores
+{
+  int  a[20];
+  int  b = 0;
+  bool c = true;
+  bool d[0];
+Error en la linea 6: Talla inapropiada del array
+         // Talla inapropiada
+
+  e = 27;
+Error en la linea 8: Objeto no declarado
+            // Objeto no declarado
+  b = c;
+Error en la linea 9: Error de tipos en la 'instruccionAsignacion'
+             // Error de tipos en la "asignacion"
+  c = a[2];
+Error en la linea 10: Error de tipos en la 'instruccionAsignacion'
+          // Error de tipos en la "asignacion"
+
+  a[c] = 1 ;
+Error en la linea 12: Error de tipos en la 'instruccionAsignacion'
+         // El indice del "array" debe ser entero
+  b[14] = 27;        // El identificador debe ser de tipo "array"
+}
+
