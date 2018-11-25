@@ -3,27 +3,43 @@
 /** ALUMNOS:                                                                **/
 /** Antonio Gallego Gallego                          <angalga2@inf.upv.es>  **/
 /** Adrian Tendero Lara                              <adtenla@inf.upv.es>   **/
-/** Jordi                                                                   **/
+/** Jordi                                            <>                   **/
 /*****************************************************************************/
 %{
 #include <stdio.h>
 #include <string.h>
+#include "libtds.h"
 #include "header.h"
 %}
 
-%token ID_ CTE_
+%union {
+    EXP exp;
+    char* ident;
+    int cent;
+}
+
+%token <ident> ID_ 
+%token <cent> CTE_
 %token MAS_ MENOS_ POR_ DIV_ ASIG_
 %token MENOR_ MAYOR_ MOD_ NOT_ AND_ OR_
 %token MASIGUAL_ MENOSIGUAL_ PORIGUAL_ DIVIGUAL_ IGUAL_ MENORIGUAL_ MAYORIGUAL_ DIFERENTE_
 %token INCREMENTO_ DECREMENTO_
 %token PARA_ PARC_ LLAVEA_ LLAVEC_ CORCHETEA_ CORCHETEC_ PUNTOCOMA_
-%token INT_ BOOL_ READ_ PRINT_ IF_ FOR_ TRUE_ FALSE_ ELSE_
+%token <cent> INT_ BOOL_ 
+%token READ_ PRINT_ IF_ FOR_ TRUE_ FALSE_ ELSE_
+
+%type <cent> tipoSimple instruccionAsignacion instruccionIteracion
+%type <cent> operadorAsignacion operadorLogico operadorIgualdad operadorRelacional
+%type <cent> operadorMultiplicativo operadorUnario operadorAditivo operadorIncremento
+
+%type <exp> expresion expresionSufija expresionOpcional expresionIgualdad expresionRelacional
+%type <exp> expresionAditiva expresionMultiplicativa expresionUnaria constante
 
 %%
 
 
 programa
-    : LLAVEA_ secuenciaSentencias LLAVEC_ { printf("\nValor del programa?= %d\n",$2); }
+    : LLAVEA_ secuenciaSentencias LLAVEC_
     ;
 
 secuenciaSentencias
@@ -45,7 +61,7 @@ declaracion
     }
     | tipoSimple ID_ ASIG_ constante PUNTOCOMA_
     {
-        if ($1 != $4.type)
+        if ($1 != $4.tipo)
            yyerror ("Error de Tipos");
         else
         {
@@ -92,7 +108,7 @@ instruccionAsignacion
 	{ 	SIMB s = obtenerTDS($1);
 		if (s.tipo == T_ERROR) 
 			yyerror("Objeto no declarado");
-		else if (!((s.tipo == $3 == T_ENTERO)||(s.tipo == $3 == T_LOGICO)))
+		else if (!( (s.tipo == $3.tipo && s.tipo == T_ENTERO)||(s.tipo == $3.tipo && s.tipo == T_LOGICO) ))
 			yyerror("Error de tipos en la 'instruccionAsignacion'");
 		else $$ = s.tipo;
 	}
@@ -101,7 +117,7 @@ instruccionAsignacion
 		SIMB s = obtenerTDS($1);
 		if (s.tipo == T_ERROR) 
 			yyerror("Objeto no declarado");
-		else if if (!((s.tipo == $6 == T_ENTERO)||(s.tipo == $6 == T_LOGICO)))
+		else if (!( (s.tipo == $6.tipo && s.tipo == T_ENTERO)||(s.tipo == $6.tipo && s.tipo == T_LOGICO) ))
 			yyerror("Error de tipos en la 'instruccionAsignacion'");
 		else {
             $$ = s.tipo;
@@ -133,7 +149,7 @@ instruccionSeleccion
 instruccionIteracion
     : FOR_ PARA_ expresionOpcional PUNTOCOMA_ expresion PUNTOCOMA_ expresionOpcional PARC_ instruccion
 	{
-		{ if ($3.tipo != T_ERROR && $3.tipo != T_LOGICO)
+		{ if ($5.tipo != T_ERROR && $5.tipo != T_LOGICO)
 			yyerror("La Guarda del bucle for tiene que ser logica"); }
 	}
     ;
@@ -145,12 +161,12 @@ expresionOpcional
         SIMB s = obtenerTDS($1);
 		if (s.tipo == T_ERROR) 
 			yyerror("Objeto no declarado");
-		else if (!((s.tipo == $3 == T_ENTERO)||(s.tipo == $3 == T_LOGICO)))
+		else if (!( (s.tipo == $3.tipo && s.tipo == T_ENTERO)||(s.tipo == $3.tipo && s.tipo == T_LOGICO) ))
 			yyerror("Error de tipos en la 'instruccionAsignacion'");
-		else $$ = s.tipo;
+		else $$.tipo = s.tipo;
 	}
 /*Pegarle un vistazo ha esta expresion que no se me ocurre como puede ser (A = True && False) una cosa asi*/
-    |
+    | {$$.tipo = T_LOGICO; }
     ;
 
 expresion
@@ -210,8 +226,8 @@ expresionRelacional
 			if ($1.tipo != $3.tipo) {
 				yyerror("Los tipos de la expresion Relacional son diferentes");
 			}
-			else if ($1.tipo = T_LOGICO){
-				yyerror("La expresion relacional con expresion logica, las expresiones relacionales solo trabajan con Enteros")
+			else if ($1.tipo == T_LOGICO){
+				yyerror("La expresion relacional con expresion logica, las expresiones relacionales solo trabajan con Enteros");
 			}else{
 				$$.tipo = T_LOGICO;
 				if (($1.valid && $3.valid) == TRUE){
@@ -275,7 +291,7 @@ expresionMultiplicativa
                         } else {
                             $$.valor = $1.valor / $3.valor;
                         }
-                    }if ($2 == OP_MOD) {
+                    }if ($2 == OP_MODULO) {
                         if ($3.valor == 0) {
                             $$.tipo = T_ERROR;
                             yyerror("No se puede dividir entre 0, y por tanto la operacion Modulo tampoco");
@@ -297,15 +313,15 @@ expresionUnaria
         $$.tipo = T_ERROR;
         $$.valid = $2.valid;
         if ($2.tipo != T_ERROR){
-            if $2.tipo == T_ENTERO){
+            if ($2.tipo == T_ENTERO){
                 if ($1 == OP_NOT){
                     yyerror("No se puede usar '!' en enteros");
                 }else if ($2.valid == TRUE){
                     $$.tipo = T_ENTERO;
-                    if ($1 =  OP_MAS) {
+                    if ($1 == OP_MAS) {
                         $$.valor = $2.valor;
                     }
-                    if ($1 = OP_MENOS) {
+                    if ($1 == OP_MENOS) {
                         $$.valor = -$2.valor;
                     }
                 }
@@ -319,7 +335,7 @@ expresionUnaria
                         $$.valor = FALSE;
                     }
                 }else{
-                    yyerror("Expresion Logica con Operacion Entera Invalida")
+                    yyerror("Expresion Logica con Operacion Entera Invalida");
                 }
             }
         }
@@ -329,10 +345,10 @@ expresionUnaria
         SIMB simb = obtenerTDS($2);
         $$.tipo = T_ERROR;
         if (simb.tipo == T_ERROR){
-            yyerror("Variable no declarada")
+            yyerror("Variable no declarada");
         }
         else if (simb.tipo == T_ARRAY){
-            yyerror("La variable es un vector sin indice")
+            yyerror("La variable es un vector sin indice");
         }
         else{
             $$.tipo = simb.tipo;
@@ -346,17 +362,34 @@ expresionSufija
     | ID_ operadorIncremento  
         {
             $$.tipo = T_ERROR;
+            $$.valid = FALSE;
             SIMB s = obtenerTDS($1);
             if(s.tipo == T_ERROR){
                 yyerror("Variable no declarada.");
-            }else if (s.TIPO == T_ARRAY){
-                yyerror("ArraySinIndice");
+            }else if (s.tipo == T_ARRAY){
+                yyerror("El array no tiene indices por los cuales acceder");
             }else{
                 $$.tipo = s.tipo;
-                $$.valid = FALSE;
+                
             }
         }
     | ID_ CORCHETEA_ expresion CORCHETEC_
+        {
+            SIMB simb = obtenerTDS($1);
+            $$.tipo = T_ERROR;
+            $$.valid = FALSE;
+            if (simb.tipo == T_ERROR)
+                yyerror("Variable no declarada");
+            else if ( simb.tipo != T_ARRAY)
+                yyerror("La variable no es un array, no se pueden poner indices");
+            else {
+                if ($3.valid == TRUE && ($3.valor < 0 || $3.valor >= simb.nelem))
+                   yyerror("Indice invalido para el array");
+                else
+                    $$.tipo = simb.telem; 
+            }
+
+        }
     | ID_
     {
         SIMB s = obtenerTDS($1);
@@ -369,9 +402,11 @@ expresionSufija
     }
     | constante 
     {
-         $$.valor = (int)$1.valor;//Casting para truncar el valor(da igual el tipo)
+	/*
+         $$.valor = (int)$1.valor; //Casting para truncar el valor(da igual el tipo)
          $$.tipo  = $1.tipo;
          $$.valid = $1.valid;
+	*/
     }
     ;
 
@@ -382,50 +417,50 @@ constante
     ;
 
 operadorAsignacion
-    : ASIG_         { $$ = OP_ASIG}
-    | MASIGUAL_     { $$ = OP_MASIGUAL}
-    | MENOSIGUAL_   { $$ = OP_MENOSIGUAL}
-    | PORIGUAL_     { $$ = OP_PORIGUAL}
-    | DIVIGUAL_     { $$ = OP_DIVIGUAL}
+    : ASIG_         { $$ = OP_ASIG;}
+    | MASIGUAL_     { $$ = OP_MASIGUAL;}
+    | MENOSIGUAL_   { $$ = OP_MENOSIGUAL;}
+    | PORIGUAL_     { $$ = OP_PORIGUAL;}
+    | DIVIGUAL_     { $$ = OP_DIVIGUAL;}
     ;
 
 operadorLogico
-    : AND_      { $$ = OP_AND}
-    | OR_       { $$ = OP_OR}
+    : AND_      { $$ = OP_AND;}
+    | OR_       { $$ = OP_OR;}
     ;
 
 operadorIgualdad
-    : IGUAL_        { $$ = OP_IGUAL}
-    | DIFERENTE_    { $$ = OP_NOT}
+    : IGUAL_        { $$ = OP_IGUAL;}
+    | DIFERENTE_    { $$ = OP_NOTIGUAL;}
     ;
 
 operadorRelacional
-    : MAYOR_        { $$ = OP_MAYOR}
-    | MENOR_        { $$ = OP_MENOR}
-    | MAYORIGUAL_   { $$ = OP_MAYORIG}
-    | MENORIGUAL_   { $$ = OP_MENORIG}
+    : MAYOR_        { $$ = OP_MAYOR;}
+    | MENOR_        { $$ = OP_MENOR;}
+    | MAYORIGUAL_   { $$ = OP_MAYORIG;}
+    | MENORIGUAL_   { $$ = OP_MENORIG;}
     ;
 
 operadorAditivo
-    : MAS_      { $$ = OP_SUMAR}
-    | MENOS_    { $$ = OP_RESTAR}
+    : MAS_      { $$ = OP_SUMAR;}
+    | MENOS_    { $$ = OP_RESTAR;}
     ;
 
 operadorMultiplicativo
-    : POR_      { $$ = OP_MULTIPLICAR}
-    | DIV_      { $$ = OP_DIVIDIR}
-    | MOD_      { $$ = OP_MODULO}
+    : POR_      { $$ = OP_MULTIPLICAR;}
+    | DIV_      { $$ = OP_DIVIDIR;}
+    | MOD_      { $$ = OP_MODULO;}
     ;
 
 operadorUnario
-    : MAS_      { $$ = OP_MAS}
-    | MENOS_    { $$ = OP_MENOS}
-    | NOT_      { $$ = OP_NOT}
+    : MAS_      { $$ = OP_MAS;}
+    | MENOS_    { $$ = OP_MENOS;}
+    | NOT_      { $$ = OP_NOT;}
     ;
 
 operadorIncremento
-    : INCREMENTO_ { $$ = OP_INCREMENENTO}
-    | DECREMENTO_ { $$ = OP_DECREMENTO}
+    : INCREMENTO_ { $$ = OP_INCREMENTO;}
+    | DECREMENTO_ { $$ = OP_DECREMENTO;}
     ;
 
 %%

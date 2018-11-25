@@ -21,7 +21,7 @@
 #define OP_OR 8
 /****************************OP_IGUALDAD **************/
 #define OP_IGUAL 9
-#define OP_NOT 10
+#define OP_NOTIGUAL 10
 /************************ RELACIONAL*************/
 #define OP_MAYOR 11
 #define OP_MENOR 12
@@ -58,7 +58,7 @@ extern FILE *yyin;
 extern int   yylineno;
 extern char *yytext;
 /********************* Variables externas definidas en el Programa Principal */
-extern void yyerror(const char * msg) ;   /* Tratamiento de errores          */
+extern void yyerror(const char * msg);   /* Tratamiento de errores          */
 
 extern int verbosidad;              /* Flag para saber si se desea una traza */
 extern int numErrores;              /* Contador del numero de errores        */
