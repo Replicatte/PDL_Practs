@@ -108,7 +108,7 @@ instruccionAsignacion
 	{ 	SIMB s = obtenerTDS($1);
 		if (s.tipo == T_ERROR) 
 			yyerror("Objeto no declarado");
-		else if ( (!(s.tipo == $3.tipo && s.tipo == T_ENTERO)||!(s.tipo == $3.tipo && s.tipo == T_LOGICO)) )
+		else if ( !((s.tipo != T_ERROR) && (s.tipo = $3.tipo)) )
 			yyerror("Error de tipos en la 'instruccionAsignacion'");
 		else $$ = s.tipo;
 	}
@@ -117,10 +117,10 @@ instruccionAsignacion
 		SIMB s = obtenerTDS($1);
 		if (s.tipo == T_ERROR) 
 			yyerror("Objeto no declarado");
-		else if (!( (s.tipo == $6.tipo && s.tipo == T_ENTERO)||(s.tipo == $6.tipo && s.tipo == T_LOGICO) ))
+		else if ( !((s.tipo != T_ERROR) && (s.telem = $6.tipo)) )
 			yyerror("Error de tipos en la 'instruccionAsignacion'");
 		else {
-            $$ = s.tipo;
+            $$ = s.telem;
         }
 	}
     ;
