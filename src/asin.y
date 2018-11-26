@@ -117,7 +117,7 @@ instruccionAsignacion
 		SIMB s = obtenerTDS($1);
 		if (s.tipo == T_ERROR) 
 			yyerror("Objeto no declarado");
-		else if ( !((s.telem == $6.tipo) && ($3.tipo == T_ENTERO) ) )
+		else if ( !((s.telem == $6.tipo) && ($3.tipo == T_ENTERO) && (s.tipo == T_ARRAY) ) )
 			yyerror("Error del array en la 'instruccionAsignacion'");
 		else {
             $$ = s.telem;
