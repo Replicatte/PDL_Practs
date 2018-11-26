@@ -149,8 +149,9 @@ instruccionSeleccion
 instruccionIteracion
     : FOR_ PARA_ expresionOpcional PUNTOCOMA_ expresion PUNTOCOMA_ expresionOpcional PARC_ instruccion
 	{
-		if ($5.tipo != T_ERROR && $5.tipo != T_LOGICO)
+		if ($5.tipo != T_LOGICO){
 			yyerror("La Guarda del bucle for tiene que ser logica");
+			}
 	}
     ;
 
@@ -300,7 +301,9 @@ expresionMultiplicativa
                             $$.valor = $1.valor % $3.valor;
                         }
                     }
+                if($$.tipo != T_ERROR)    
                     $$.valid = TRUE;
+                else $$.valid = FALSE;
                 } else $$.valid = FALSE;
             }
 		} 
@@ -398,7 +401,7 @@ expresionSufija
         $$.valid = FALSE;
         if(s.tipo == T_ERROR){
             yyerror("Variable no declarada.");    
-        }
+        }else{$$.tipo = s.tipo;}
         
     }
     | constante 
