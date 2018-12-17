@@ -267,7 +267,11 @@ expresionAditiva
                     $$.valid = TRUE;
                 } else $$.valid = FALSE;
             }
-		}	
+		}
+
+        /* inicio GCI (Generacion de codigo intermedio */
+        $$.pos = creaVarTemp();
+        emite($2, crArgPos($1.pos), crArgPos($3.pos), crArgPos($$.pos));	
 	}
     ;
 
@@ -446,8 +450,8 @@ operadorRelacional
     ;
 
 operadorAditivo
-    : MAS_      { $$ = OP_SUMAR;}
-    | MENOS_    { $$ = OP_RESTAR;}
+    : MAS_      { $$ = ESUM;}
+    | MENOS_    { $$ = EDIF;}
     ;
 
 operadorMultiplicativo
