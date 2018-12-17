@@ -8,10 +8,10 @@ INCDIR = include
 LIBDIR = lib
 # Opciones de compilacion
 COPT = -Wall
-CLIB = -lfl -ltds
+CLIB = -lfl -ltds -lgci
 OBJS = ./alex.o  ./asin.o ./principal.o 
 #
-cmc:	$(OBJS)  $(LIBDIR)/libtds.a
+cmc:	$(OBJS)  $(LIBDIR)/libtds.a  $(LIBDIR)/libgci.a
 	gcc $(OBJS) -I$(INCDIR) -L$(LIBDIR) $(COPT) $(CLIB) -o cmc
 principal.o: $(SRCDIR)/principal.c
 	gcc  -I$(INCDIR) $(COPT) -c $(SRCDIR)/principal.c
@@ -26,6 +26,6 @@ alex.c:	$(SRCDIR)/alex.l
 	flex -oalex.c $(SRCDIR)/alex.l 
 
 clean:
-	rm -f ./alex.c  ./asin.c ./include/asin.h 
+	rm -f ./alex.c ./asin.c ./include/asin.h
 	rm -f ./*.o  ./include/*.?~  ./src/*.?~
 ###############################################################################
