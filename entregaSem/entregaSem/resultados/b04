@@ -1,0 +1,32 @@
+// Ejemplo (absurdo) sintactico-semantico sin errores.
+// Comprobad el resultado con la funcion "mostraTDS" 
+{
+  int a;
+  read(a);
+  bool b[7];
+  int i;
+
+  for (i = 0; i < 7; i++) {  
+    b[i] = a > 0 ;
+Error en la linea 10: Error de tipos en la 'instruccionAsignacion'
+ 
+    read (a);
+  }
+
+  int c[27];
+  int j;
+  for (j = 0; j < 27; j++) {  
+    c[j] = j;
+Error en la linea 17: Error de tipos en la 'instruccionAsignacion'
+
+  }
+
+  int d;
+  bool e;
+  d = c[4];
+Error en la linea 22: Error de tipos en la 'instruccionAsignacion'
+
+  e = b[4] && ( d > 0 );
+Error en la linea 23: Error de tipos en la 'instruccionAsignacion'
+
+}
