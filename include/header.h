@@ -48,7 +48,6 @@
 typedef struct exp {
     int valor;
     int tipo;
-    int valid;
 } EXP;
 /************************************* Variables externas definidas en el AL */
 extern int yylex();
