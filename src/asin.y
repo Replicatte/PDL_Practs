@@ -401,11 +401,11 @@ constante
     ;
 
 operadorAsignacion
-    : ASIG_         { $$ = OP_ASIG;}
-    | MASIGUAL_     { $$ = OP_MASIGUAL;}
-    | MENOSIGUAL_   { $$ = OP_MENOSIGUAL;}
-    | PORIGUAL_     { $$ = OP_PORIGUAL;}
-    | DIVIGUAL_     { $$ = OP_DIVIGUAL;}
+    : ASIG_         { $$ = EASIG;}
+    | MASIGUAL_     { $$ = ESUM;}
+    | MENOSIGUAL_   { $$ = EDIF;}
+    | PORIGUAL_     { $$ = EMULT;}
+    | DIVIGUAL_     { $$ = EDIVI;}
     ;
 
 operadorLogico
@@ -414,37 +414,37 @@ operadorLogico
     ;
 
 operadorIgualdad
-    : IGUAL_        { $$ = OP_IGUAL;}
-    | DIFERENTE_    { $$ = OP_NOTIGUAL;}
+    : IGUAL_        { $$ = EIGUAL;}
+    | DIFERENTE_    { $$ = EDIST;}
     ;
 
 operadorRelacional
-    : MAYOR_        { $$ = OP_MAYOR;}
-    | MENOR_        { $$ = OP_MENOR;}
-    | MAYORIGUAL_   { $$ = OP_MAYORIG;}
-    | MENORIGUAL_   { $$ = OP_MENORIG;}
+    : MAYOR_        { $$ = EMAY;}
+    | MENOR_        { $$ = EMEN;}
+    | MAYORIGUAL_   { $$ = EMAYEQ;}
+    | MENORIGUAL_   { $$ = EMENEQ;}
     ;
 
 operadorAditivo
-    : MAS_      { $$ = OP_SUMAR;}
+    : MAS_      { $$ = E;}
     | MENOS_    { $$ = OP_RESTAR;}
     ;
 
 operadorMultiplicativo
-    : POR_      { $$ = OP_MULTIPLICAR;}
-    | DIV_      { $$ = OP_DIVIDIR;}
-    | MOD_      { $$ = OP_MODULO;}
+    : POR_      { $$ = EMULT;}
+    | DIV_      { $$ = EDIVI;}
+    | MOD_      { $$ = RESTO;}
     ;
 
 operadorUnario
-    : MAS_      { $$ = OP_MAS;}
-    | MENOS_    { $$ = OP_MENOS;}
+    : MAS_      { $$ = ESUM;}
+    | MENOS_    { $$ = EDIF;}
     | NOT_      { $$ = OP_NOT;}
     ;
 
 operadorIncremento
-    : INCREMENTO_ { $$ = OP_INCREMENTO;}
-    | DECREMENTO_ { $$ = OP_DECREMENTO;}
+    : INCREMENTO_ { $$ = ESUM;}
+    | DECREMENTO_ { $$ = EDIF;}
     ;
 
 %%
