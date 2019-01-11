@@ -259,9 +259,6 @@ expresionAditiva
                     $$.valor = $1.valor - $3.valor;
             }
 		}
-        /* inicio GCI (Generacion de codigo intermedio */
-        $$.pos = creaVarTemp();
-        emite($2, crArgPos($1.pos), crArgPos($3.pos), crArgPos($$.pos));	
 	}
     ;
 
@@ -367,15 +364,15 @@ expresionSufija
         {
             SIMB simb = obtenerTDS($1);
             $$.tipo = T_ERROR;
-            if (simb.tipo == T_ERROR)
+            if (simb.tipo == T_ERROR){
                 yyerror("Variable no declarada");
-            else if ( simb.tipo != T_ARRAY)
-                yyerror("La variable no es un array, no se pueden poner indices");
+            }else if ( simb.tipo != T_ARRAY){
+                yyerror("La variable no es un array, no se pueden poner indices");}
             else {
-                if ($3.tipo = T_ENTERO && ($3.valor < 0 || $3.valor >= simb.nelem))
+                if($3.tipo == T_ENTERO && (($3.valor < 0) || ($3.valor >= simb.nelem))){
                    yyerror("Indice invalido para el array");
-                else
-                    $$.tipo = simb.telem; 
+                }else{
+                    $$.tipo = simb.telem; }
             }
 
         }
@@ -400,7 +397,7 @@ expresionSufija
 constante
     : CTE_      { $$.valor = $<cent>1;	$$.tipo = T_ENTERO;}
     | TRUE_     { $$.valor = TRUE;	$$.tipo = T_LOGICO;}
-    | FALSE_    { $$.valor = FALSE;	$$.tipo = T_LOGICO;
+    | FALSE_    { $$.valor = FALSE;	$$.tipo = T_LOGICO;}
     ;
 
 operadorAsignacion
@@ -429,8 +426,8 @@ operadorRelacional
     ;
 
 operadorAditivo
-    : MAS_      { $$ = ESUM;}
-    | MENOS_    { $$ = EDIF;}
+    : MAS_      { $$ = OP_SUMAR;}
+    | MENOS_    { $$ = OP_RESTAR;}
     ;
 
 operadorMultiplicativo
