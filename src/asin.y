@@ -156,7 +156,7 @@ instruccionIteracion
     ;
 
 expresionOpcional
-    : expresion	{ $$.tipo = $1.tipo; $$.valor = $1.valor; $$.valid = $1.valid; }
+    : expresion	{ $$.tipo = $1.tipo; $$.valor = $1.valor;}
     | ID_ ASIG_ expresion
     { 	
         SIMB s = obtenerTDS($1);
@@ -171,7 +171,7 @@ expresionOpcional
     ;
 
 expresion
-    : expresionIgualdad { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.valid = $1.valid; } 
+    : expresionIgualdad { $$.tipo = $1.tipo; $$.valor = $1.valor;} 
     | expresion operadorLogico expresionIgualdad 
 		{
             $$.tipo = T_ERROR;
@@ -181,20 +181,19 @@ expresion
                     yyerror( "Los tipos no coinciden en la expresion" );                
                 } else {
                     $$.tipo = T_LOGICO;
-                    if ($1.valid == TRUE && $3.valid == TRUE) {
-                        if ($2 == OP_OR)
-                            $$.valor = $1.valor || $3.valor ? TRUE : FALSE;
-                        else if ($2 == OP_AND)
-                            $$.valor = $1.valor && $3.valor ? TRUE : FALSE;
-                        $$.valid = TRUE;
-                    } else $$.valid = FALSE;
+                    if ($2 == OP_OR)
+                        $$.valor = $1.valor || $3.valor ? TRUE : FALSE;
+                    else if ($2 == OP_AND)
+                        $$.valor = $1.valor && $3.valor ? TRUE : FALSE;
+
+                   
                 }
             }
         }
     ;
 
 expresionIgualdad
-    : expresionRelacional { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.valid = $1.valid; }
+    : expresionRelacional { $$.tipo = $1.tipo; $$.valor = $1.valor;}
     | expresionIgualdad operadorIgualdad expresionRelacional
         {
             $$.tipo = T_ERROR;
@@ -206,20 +205,17 @@ expresionIgualdad
                     yyerror( "El operador de igualdad no se puede aplicar en los arrays" );                
                 } else {
                     $$.tipo = T_LOGICO;
-                    if ($1.valid == TRUE && $3.valid == TRUE) {
-                        if ($2 == OP_IGUAL)
-                            $$.valor = $1.valor == $3.valor ? TRUE : FALSE;
-                        else if ($2 == OP_NOT)
-                            $$.valor = $1.valor != $3.valor ? TRUE : FALSE;
-                        $$.valid = TRUE;
-                    } else $$.valid = FALSE;
+                    if ($2 == OP_IGUAL)
+                        $$.valor = $1.valor == $3.valor ? TRUE : FALSE;
+                    else if ($2 == OP_NOT)
+                        $$.valor = $1.valor != $3.valor ? TRUE : FALSE;
                 }
             }
         }
     ;
 
 expresionRelacional
-    : expresionAditiva { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.valid = $1.valid; }
+    : expresionAditiva { $$.tipo = $1.tipo; $$.valor = $1.valor;}
     | expresionRelacional operadorRelacional expresionAditiva
 	{
 		$$.tipo = T_ERROR;
@@ -231,24 +227,21 @@ expresionRelacional
 				yyerror("La expresion relacional con expresion logica, las expresiones relacionales solo trabajan con Enteros");
 			}else{
 				$$.tipo = T_LOGICO;
-				if (($1.valid && $3.valid) == TRUE){
-					if ($2 == OP_MAYOR)
-						$$.valor = $1.valor > $3.valor ? TRUE : FALSE;
-					if ($2 == OP_MENOR)
-						$$.valor = $1.valor < $3.valor ? TRUE : FALSE;
-					if ($2 == OP_MAYORIG)
-						$$.valor = $1.valor >= $3.valor ? TRUE : FALSE;
-					if ($2 == OP_MENORIG)
-						$$.valor = $1.valor <= $3.valor ? TRUE : FALSE;
-					$$.valid = TRUE;			
-				}else{$$.valid = FALSE;}			
+				if ($2 == OP_MAYOR)
+					$$.valor = $1.valor > $3.valor ? TRUE : FALSE;
+				if ($2 == OP_MENOR)
+					$$.valor = $1.valor < $3.valor ? TRUE : FALSE;
+				if ($2 == OP_MAYORIG)
+					$$.valor = $1.valor >= $3.valor ? TRUE : FALSE;
+				if ($2 == OP_MENORIG)
+					$$.valor = $1.valor <= $3.valor ? TRUE : FALSE;		
 			}
 		}
 	}
     ;
 
 expresionAditiva 
-    : expresionMultiplicativa { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.valid = $1.valid; }
+    : expresionMultiplicativa { $$.tipo = $1.tipo; $$.valor = $1.valor;}
     | expresionAditiva operadorAditivo expresionMultiplicativa
 	{
 	$$.tipo = T_ERROR;
@@ -259,16 +252,13 @@ expresionAditiva
                 yyerror("La Operacion Aditiva solo trabaja con tipo Entero");
             } else {
                 $$.tipo = T_ENTERO;
-                if (($1.valid && $3.valid) == TRUE) {
-                    if ($2 == OP_SUMAR)
-                        $$.valor = $1.valor + $3.valor;
-                    else if ($2 == OP_RESTAR)
-                        $$.valor = $1.valor - $3.valor;
-                    $$.valid = TRUE;
-                } else $$.valid = FALSE;
+
+                if ($2 == OP_SUMAR)
+                    $$.valor = $1.valor + $3.valor;
+                else if ($2 == OP_RESTAR)
+                    $$.valor = $1.valor - $3.valor;
             }
 		}
-
         /* inicio GCI (Generacion de codigo intermedio */
         $$.pos = creaVarTemp();
         emite($2, crArgPos($1.pos), crArgPos($3.pos), crArgPos($$.pos));	
@@ -276,7 +266,7 @@ expresionAditiva
     ;
 
 expresionMultiplicativa
-    : expresionUnaria { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.valid = $1.valid; }
+    : expresionUnaria { $$.tipo = $1.tipo; $$.valor = $1.valor;}
     | expresionMultiplicativa operadorMultiplicativo expresionUnaria
 	{ $$.tipo = T_ERROR;
         if ($1.tipo != T_ERROR && $3.tipo != T_ERROR) {
@@ -286,45 +276,39 @@ expresionMultiplicativa
                 yyerror("Operacion multiplicativa solo acepta argumentos enteros");
             } else {
                 $$.tipo = T_ENTERO;
-                if (($1.valid && $3.valid) == TRUE) {
-                    if ($2 == OP_MULTIPLICAR)
-                        $$.valor = $1.valor * $3.valor;
-                    if ($2 == OP_DIVIDIR) {
-                        if ($3.valor == 0) {
-                            $$.tipo = T_ERROR;
-                            yyerror("No se puede dividir entre 0");
-                        } else {
-                            $$.valor = $1.valor / $3.valor;
-                        }
+
+                if ($2 == OP_MULTIPLICAR)
+                    $$.valor = $1.valor * $3.valor;
+                if ($2 == OP_DIVIDIR) {
+                    if ($3.valor == 0) {
+                        $$.tipo = T_ERROR;
+                        yyerror("No se puede dividir entre 0");
+                    } else {
+                        $$.valor = $1.valor / $3.valor;
+                    }
                     }if ($2 == OP_MODULO) {
                         if ($3.valor == 0) {
                             $$.tipo = T_ERROR;
                             yyerror("No se puede dividir entre 0, y por tanto la operacion Modulo tampoco");
                         } else {
-
                             $$.valor = $1.valor % $3.valor;
                         }
                     }
-                if($$.tipo != T_ERROR)    
-                    $$.valid = TRUE;
-                else $$.valid = FALSE;
-                } else $$.valid = FALSE;
             }
 		} 
 	}
     ;
 
 expresionUnaria
-    : expresionSufija { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.valid = $1.valid; }
+    : expresionSufija { $$.tipo = $1.tipo; $$.valor = $1.valor;}
     | operadorUnario expresionUnaria
     { 
         $$.tipo = T_ERROR;
-        $$.valid = $2.valid;
         if ($2.tipo != T_ERROR){
             if ($2.tipo == T_ENTERO){
                 if ($1 == OP_NOT){
                     yyerror("No se puede usar '!' en enteros");
-                }else if ($2.valid == TRUE){
+                }else{
                     $$.tipo = T_ENTERO;
                     if ($1 == OP_MAS) {
                         $$.valor = $2.valor;
@@ -335,7 +319,7 @@ expresionUnaria
                 }
             }
             if ($2.tipo == T_LOGICO){
-                if($1 == OP_NOT && $2.valid){
+                if($1 == OP_NOT){
                     $$.tipo=T_LOGICO;
                     if($2.valor == FALSE){
                         $$.valor = TRUE;
@@ -361,16 +345,14 @@ expresionUnaria
         else{
             $$.tipo = simb.tipo;
         }
-        $$.valid = FALSE;
     }
     ;
 
 expresionSufija
-    : PARA_ expresion PARC_ { $$.tipo = $2.tipo; $$.valor = $2.valor; $$.valid = $2.valid; }
+    : PARA_ expresion PARC_ { $$.tipo = $2.tipo; $$.valor = $2.valor;}
     | ID_ operadorIncremento  
         {
             $$.tipo = T_ERROR;
-            $$.valid = FALSE;
             SIMB s = obtenerTDS($1);
             if(s.tipo == T_ERROR){
                 yyerror("Variable no declarada.");
@@ -385,13 +367,12 @@ expresionSufija
         {
             SIMB simb = obtenerTDS($1);
             $$.tipo = T_ERROR;
-            $$.valid = FALSE;
             if (simb.tipo == T_ERROR)
                 yyerror("Variable no declarada");
             else if ( simb.tipo != T_ARRAY)
                 yyerror("La variable no es un array, no se pueden poner indices");
             else {
-                if ($3.valid == TRUE && ($3.valor < 0 || $3.valor >= simb.nelem))
+                if ($3.tipo = T_ENTERO && ($3.valor < 0 || $3.valor >= simb.nelem))
                    yyerror("Indice invalido para el array");
                 else
                     $$.tipo = simb.telem; 
@@ -402,7 +383,6 @@ expresionSufija
     {
         SIMB s = obtenerTDS($1);
         $$.tipo = T_ERROR;
-        $$.valid = FALSE;
         if(s.tipo == T_ERROR){
             yyerror("Variable no declarada.");    
         }else{$$.tipo = s.tipo;}
@@ -413,15 +393,14 @@ expresionSufija
 	
          $$.valor = (int)$1.valor; //Casting para truncar el valor(da igual el tipo)
          $$.tipo  = $1.tipo;
-         $$.valid = $1.valid;
 	
     }
     ;
 
 constante
-    : CTE_      { $$.valor = $<cent>1;	$$.tipo = T_ENTERO; $$.valid = TRUE; }
-    | TRUE_     { $$.valor = TRUE;	$$.tipo = T_LOGICO; $$.valid = TRUE; }
-    | FALSE_    { $$.valor = FALSE;	$$.tipo = T_LOGICO; $$.valid = TRUE; }
+    : CTE_      { $$.valor = $<cent>1;	$$.tipo = T_ENTERO;}
+    | TRUE_     { $$.valor = TRUE;	$$.tipo = T_LOGICO;}
+    | FALSE_    { $$.valor = FALSE;	$$.tipo = T_LOGICO;
     ;
 
 operadorAsignacion
