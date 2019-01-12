@@ -137,11 +137,12 @@ instruccionEntradaSalida
             yyerror("READ es para Tipo Entero");
 
         //GCI
-        emite(EREAD,crArgNul(),crArgNul(),crArgPos(simb.desp));
+        emite(EREAD,crArgNul(),crArgNul(),crArgPos(s.desp));
+        //GCI
+        emite(EREAD,crArgNul(),crArgNul(),crArgPos(s.desp));
 
         }
-        //GCI
-        emite(EREAD,crArgNul(),crArgNul(),crArgPos(simb.desp));
+        
 
     | PRINT_ PARA_ expresion PARC_ PUNTOCOMA_
         {
@@ -182,18 +183,20 @@ instruccionIteracion
     expresion PUNTOCOMA_
         {
             $<cent>$ = creaLans(si); // Siguiente instruccion despues de 'instruccion'
-            emite(EIGUAL, crArgPos($6.pos), crArgEnt(FALSE), crArgEtq($<cent>9));
-
+            emite(EIGUAL, crArgPos($6.pos), crArgEnt(FALSE), crArgEtq($<cent>$));
+        }
+        {
             $<cent>$ = creaLans(si); // 'instruccion'
-            emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<cent>8));
-            
+            emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<cent>$));
+        }
+        {
             $<cent>$ = si;
         }
 
     expresionOpcional PARC_ 
         {
             emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<cent>5));
-            completaLans($<cent>8, crArgEtq(si));
+            completaLans($<cent>9, crArgEtq(si));
         }
     instruccion
 	{
@@ -201,8 +204,8 @@ instruccionIteracion
 			yyerror("La Guarda del bucle for tiene que ser logica");
 			}
         
-        emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<cent>7));
-        completaLans($<cent>9, crArgEtq(si));
+        emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<cent>10));
+        completaLans($<cent>8, crArgEtq(si));
         
 	}
     ;
