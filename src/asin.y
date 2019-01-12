@@ -10,6 +10,7 @@
 #include <string.h>
 #include "libtds.h"
 #include "header.h"
+#include "libgci.h"
 %}
 
 %union {
@@ -215,7 +216,7 @@ expresionIgualdad
     ;
 
 expresionRelacional
-    : expresionAditiva { $$.tipo = $1.tipo; $$.valor = $1.valor;}
+    : expresionAditiva { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.pos = $1.pos; }
     | expresionRelacional operadorRelacional expresionAditiva
 	{
 		$$.tipo = T_ERROR;
@@ -223,20 +224,26 @@ expresionRelacional
 			if ($1.tipo != $3.tipo) {
 				yyerror("Los tipos de la expresion Relacional son diferentes");
 			}
-			else if ($1.tipo == T_LOGICO){
+			else if ($1.tipo != T_ENTERO){
 				yyerror("La expresion relacional con expresion logica, las expresiones relacionales solo trabajan con Enteros");
 			}else{
 				$$.tipo = T_LOGICO;
-				if ($2 == OP_MAYOR)
+				if ($2 == EMAY)
 					$$.valor = $1.valor > $3.valor ? TRUE : FALSE;
-				if ($2 == OP_MENOR)
+				if ($2 == EMEN)
 					$$.valor = $1.valor < $3.valor ? TRUE : FALSE;
-				if ($2 == OP_MAYORIG)
+				if ($2 == EMAYEQ)
 					$$.valor = $1.valor >= $3.valor ? TRUE : FALSE;
-				if ($2 == OP_MENORIG)
+				if ($2 == EMENEQ)
 					$$.valor = $1.valor <= $3.valor ? TRUE : FALSE;		
 			}
 		}
+
+        $$.pos = creaVarTemp();
+		emite(EASIG, crArgEnt(TRUE), crArgNul(), crArgPos($$.pos));
+		emite($2, crArgPos($1.pos), crArgPos($3.pos), crArgEtq(si + 2));
+		emite(EASIG, crArgEnt(FALSE), crArgNul(), crArgPos($$.pos)); 
+
 	}
     ;
 
@@ -253,17 +260,19 @@ expresionAditiva
             } else {
                 $$.tipo = T_ENTERO;
 
-                if ($2 == OP_SUMAR)
+                if ($2 == ESUM)
                     $$.valor = $1.valor + $3.valor;
-                else if ($2 == OP_RESTAR)
+                else if ($2 == EDIF)
                     $$.valor = $1.valor - $3.valor;
             }
 		}
-	}
+
+        $$.pos = creaVarTemp();
+		emite($2, crArgPos($1.pos), crArgPos($3.pos), crArgPos($$.pos)); 
     ;
 
 expresionMultiplicativa
-    : expresionUnaria { $$.tipo = $1.tipo; $$.valor = $1.valor;}
+    : expresionUnaria { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.pos = $1.pos}
     | expresionMultiplicativa operadorMultiplicativo expresionUnaria
 	{ $$.tipo = T_ERROR;
         if ($1.tipo != T_ERROR && $3.tipo != T_ERROR) {
@@ -274,16 +283,16 @@ expresionMultiplicativa
             } else {
                 $$.tipo = T_ENTERO;
 
-                if ($2 == OP_MULTIPLICAR)
+                if ($2 == EMULT)
                     $$.valor = $1.valor * $3.valor;
-                if ($2 == OP_DIVIDIR) {
+                if ($2 == EDIVI) {
                     if ($3.valor == 0) {
                         $$.tipo = T_ERROR;
                         yyerror("No se puede dividir entre 0");
                     } else {
                         $$.valor = $1.valor / $3.valor;
                     }
-                    }if ($2 == OP_MODULO) {
+                    }if ($2 == RESTO) {
                         if ($3.valor == 0) {
                             $$.tipo = T_ERROR;
                             yyerror("No se puede dividir entre 0, y por tanto la operacion Modulo tampoco");
@@ -293,11 +302,13 @@ expresionMultiplicativa
                     }
             }
 		} 
+        $$.pos = creaVarTemp();
+		emite($2, crArgPos($1.pos), crArgPos($3.pos), crArgPos($$.pos)); 
 	}
     ;
 
 expresionUnaria
-    : expresionSufija { $$.tipo = $1.tipo; $$.valor = $1.valor;}
+    : expresionSufija { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.pos = $1.pos; } 
     | operadorUnario expresionUnaria
     { 
         $$.tipo = T_ERROR;
@@ -307,10 +318,10 @@ expresionUnaria
                     yyerror("No se puede usar '!' en enteros");
                 }else{
                     $$.tipo = T_ENTERO;
-                    if ($1 == OP_MAS) {
+                    if ($1 == ESUM) {
                         $$.valor = $2.valor;
                     }
-                    if ($1 == OP_MENOS) {
+                    if ($1 == DIF) {
                         $$.valor = -$2.valor;
                     }
                 }
@@ -328,6 +339,14 @@ expresionUnaria
                 }
             }
         }
+
+        $$.pos = creaVarTemp();
+        if ($1 == OP_NOT) {
+            emite(EDIF, crArgEnt(1), crArgPos($2.pos), crArgPos($$.pos));
+        } else {
+            emite($1, crArgEnt(0), crArgPos($2.pos), crArgPos($$.pos));
+        }
+
     }
     | operadorIncremento ID_
     {
@@ -342,11 +361,16 @@ expresionUnaria
         else{
             $$.tipo = simb.tipo;
         }
+
+        $$.pos = creaVarTemp();
+		/* Primero se incrementa/decrementa y luego se copia a $$.pos */
+		emite($1, crArgPos(simb.desp), crArgEnt(1), crArgPos(simb.desp));
+		emite(EASIG, crArgPos(simb.desp), crArgNul(),  crArgPos($$.pos));
     }
     ;
 
 expresionSufija
-    : PARA_ expresion PARC_ { $$.tipo = $2.tipo; $$.valor = $2.valor;}
+    : PARA_ expresion PARC_ { $$.tipo = $2.tipo; $$.valor = $2.valor; $$.pos = $2.pos;}
     | ID_ operadorIncremento  
         {
             $$.tipo = T_ERROR;
@@ -356,9 +380,12 @@ expresionSufija
             }else if (s.tipo == T_ARRAY){
                 yyerror("El array no tiene indices por los cuales acceder");
             }else{
-                $$.tipo = s.tipo;
-                
+                $$.tipo = s.tipo;   
             }
+            $$.pos = creaVarTemp();
+            /* Copiamos el valor a $$.pos y luego lo incrementales */
+            emite(EASIG, crArgPos(simb.desp), crArgNul(), crArgPos($$.pos));
+            emite($2, crArgPos(simb.desp), crArgNul(), crArgPos($$.pos));
         }
     | ID_ CORCHETEA_ expresion CORCHETEC_
         {
@@ -368,12 +395,17 @@ expresionSufija
                 yyerror("Variable no declarada");
             }else if ( simb.tipo != T_ARRAY){
                 yyerror("La variable no es un array, no se pueden poner indices");}
+            else if($3.tipo != T_ENTERO)
+                yyerror("Indice invalido para el array");
             else {
                 if($3.tipo == T_ENTERO && (($3.valor < 0) || ($3.valor >= simb.nelem))){
                    yyerror("Indice invalido para el array");
                 }else{
                     $$.tipo = simb.telem; }
             }
+
+            $$.pos = creaVarTemp();
+            emite(EAV, crArgPos(simb.desp), crArgPos($3.pos), crArgPos($$.pos));
 
         }
     | ID_
@@ -426,8 +458,8 @@ operadorRelacional
     ;
 
 operadorAditivo
-    : MAS_      { $$ = E;}
-    | MENOS_    { $$ = OP_RESTAR;}
+    : MAS_      { $$ = ESUM;}
+    | MENOS_    { $$ = EDIF;}
     ;
 
 operadorMultiplicativo

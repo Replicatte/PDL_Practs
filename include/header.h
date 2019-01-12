@@ -48,6 +48,7 @@
 typedef struct exp {
     int valor;
     int tipo;
+    int pos;
 } EXP;
 /************************************* Variables externas definidas en el AL */
 extern int yylex();
@@ -61,6 +62,8 @@ extern void yyerror(const char * msg);   /* Tratamiento de errores          */
 
 extern int verbosidad;              /* Flag para saber si se desea una traza */
 extern int numErrores;              /* Contador del numero de errores        */
+/********************* Variables externas definidas en las librerias ***/
+extern int si;		/* Desplazamiento relativo en el Segmento de Codigo */
 
 #endif  /* _HEADER_H */
 /*****************************************************************************/
