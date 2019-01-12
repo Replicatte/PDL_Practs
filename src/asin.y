@@ -41,6 +41,8 @@
 
 programa
     : LLAVEA_ secuenciaSentencias LLAVEC_
+    {   //GCI 
+        emite(FIN,crArgNul(),crArgNul(),crArgNul());}
     ;
 
 secuenciaSentencias
@@ -133,26 +135,75 @@ instruccionEntradaSalida
             yyerror("Tipo no declarado");
         else if (s.tipo != T_ENTERO)
             yyerror("READ es para Tipo Entero");
+
+        //GCI
+        emite(EREAD,crArgNul(),crArgNul(),crArgPos(simb.desp));
+
         }
+        //GCI
+        emite(EREAD,crArgNul(),crArgNul(),crArgPos(simb.desp));
+
     | PRINT_ PARA_ expresion PARC_ PUNTOCOMA_
         {
         if ($3.tipo != T_ENTERO)
-            yyerror("PRINT necesita Tipo Entero");
+            yyerror("PRINT es para Tipo Entero");
+            //GCI
+            emite(EWRITE, crArgNul(), crArgNul(), crArgPos($3.pos));
         }
+
     ;
 
 instruccionSeleccion
     : IF_ PARA_ expresion PARC_ 
-        { if ($3.tipo != T_ERROR && $3.tipo != T_LOGICO) yyerror("La expresion del if debe ser de tipo logica"); }        
-        instruccion ELSE_ instruccion
+        { if ($3.tipo != T_ERROR && $3.tipo != T_LOGICO) 
+            yyerror("La expresion del if debe ser de tipo logica");
+          
+          $<cent>$ = creaLans(si);
+          emite(EIGUAL, crArgPos($3.pos), crArgEnt(FALSE), crArgEtq($<cent>$));
+        }        
+        instruccion ELSE_
+            {
+                $<cent>$ = creaLans(si);
+                emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<cent>$));
+                completaLans($<cent>5, crArgEtq(si));
+            }
+        instruccion
+            {
+                completaLans($<cent>7, crArgEtq(si));
+            }
     ;
 
 instruccionIteracion
-    : FOR_ PARA_ expresionOpcional PUNTOCOMA_ expresion PUNTOCOMA_ expresionOpcional PARC_ instruccion
+    : FOR_ PARA_ expresionOpcional PUNTOCOMA_
+        {
+            $<cent>$ = si;
+        }
+
+    expresion PUNTOCOMA_
+        {
+            $<cent>$ = creaLans(si); // Siguiente instruccion despues de 'instruccion'
+            emite(EIGUAL, crArgPos($6.pos), crArgEnt(FALSE), crArgEtq($<cent>9));
+
+            $<cent>$ = creaLans(si); // 'instruccion'
+            emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<cent>8));
+            
+            $<cent>$ = si;
+        }
+
+    expresionOpcional PARC_ 
+        {
+            emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<cent>5));
+            completaLans($<cent>8, crArgEtq(si));
+        }
+    instruccion
 	{
-		if ($5.tipo != T_LOGICO){
+		if ($6.tipo != T_LOGICO){
 			yyerror("La Guarda del bucle for tiene que ser logica");
 			}
+        
+        emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<cent>7));
+        completaLans($<cent>9, crArgEtq(si));
+        
 	}
     ;
 
@@ -160,13 +211,18 @@ expresionOpcional
     : expresion	{ $$.tipo = $1.tipo; $$.valor = $1.valor;}
     | ID_ ASIG_ expresion
     { 	
+        $$.tipo = T_ERROR;
         SIMB s = obtenerTDS($1);
 		if (s.tipo == T_ERROR) 
 			yyerror("Objeto no declarado");
 		else if (!( (s.tipo == $3.tipo && s.tipo == T_ENTERO)||(s.tipo == $3.tipo && s.tipo == T_LOGICO) ))
 			yyerror("Error de tipos en la 'instruccionAsignacion'");
 		else $$.tipo = s.tipo;
-	}
+        
+        $$.pos = creaVarTemp();
+        emite(EASIG, crArgPos($3.pos), crArgNul(), crArgPos($$.pos));
+        emite(EASIG, crArgPos($$.pos), crArgNul(), crArgPos(s.desp)); 
+    }
 /*Pegarle un vistazo ha esta expresion que no se me ocurre como puede ser (A = True && False) una cosa asi*/
     | { $$.tipo = T_LOGICO; }
     ;
@@ -190,6 +246,11 @@ expresion
                    
                 }
             }
+            $$.pos = creaVarTemp();
+            int overrideValue = $2 == OP_AND ? FALSE : TRUE;
+            emite(EASIG, crArgPos($3.pos), crArgNul(), crArgPos($$.pos));
+            emite(EDIST, crArgPos($1.pos), crArgEnt(overrideValue), crArgEtq(si + 2));
+            emite(EASIG, crArgEnt(overrideValue), crArgNul(), crArgPos($$.pos)); 
         }
     ;
 
@@ -206,12 +267,16 @@ expresionIgualdad
                     yyerror( "El operador de igualdad no se puede aplicar en los arrays" );                
                 } else {
                     $$.tipo = T_LOGICO;
-                    if ($2 == OP_IGUAL)
+                    if ($2 == EIGUAL)
                         $$.valor = $1.valor == $3.valor ? TRUE : FALSE;
-                    else if ($2 == OP_NOT)
+                    else if ($2 == EDIST)
                         $$.valor = $1.valor != $3.valor ? TRUE : FALSE;
                 }
             }
+            $$.pos = creaVarTemp();
+            emite(EASIG, crArgEnt(TRUE), crArgNul(), crArgPos($$.pos));
+            emite($2, crArgPos($1.pos), crArgPos($3.pos), crArgEtq(si + 2));
+            emite(EASIG, crArgEnt(FALSE), crArgNul(), crArgPos($$.pos));
         }
     ;
 
