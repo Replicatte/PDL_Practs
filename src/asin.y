@@ -6,11 +6,11 @@
 /** Jordi Almendros Granero                      <joralgra@etsiamn.upv.es>  **/
 /*****************************************************************************/
 %{
-#include <stdio.h>
-#include <string.h>
-#include "libtds.h"
-#include "header.h"
-#include "libgci.h"
+    #include <stdio.h>
+    #include <string.h>
+    #include "libtds.h"
+    #include "header.h"
+    #include "libgci.h"
 %}
 
 %union {
@@ -29,11 +29,11 @@
 %token <cent> INT_ BOOL_ 
 %token READ_ PRINT_ IF_ FOR_ TRUE_ FALSE_ ELSE_
 
-%type <cent> tipoSimple instruccionAsignacion instruccionIteracion
+%type <cent> tipoSimple instruccionIteracion
 %type <cent> operadorAsignacion operadorLogico operadorIgualdad operadorRelacional
 %type <cent> operadorMultiplicativo operadorUnario operadorAditivo operadorIncremento
 
-%type <exp> expresion expresionSufija expresionOpcional expresionIgualdad expresionRelacional
+%type <exp> expresion expresionSufija expresionOpcional expresionIgualdad expresionRelacional instruccionAsignacion
 %type <exp> expresionAditiva expresionMultiplicativa expresionUnaria constante
 
 %%
@@ -113,8 +113,17 @@ instruccionAsignacion
 			yyerror("Objeto no declarado");
 		else if ( !((s.tipo != T_ERROR) && (s.tipo == $3.tipo)) )
 			yyerror("Error de tipos en la 'instruccionAsignacion'");
-		else $$ = s.tipo;
+		else $$.tipo = s.tipo;
+
+        $$.pos = creaVarTemp();
+        // if($2 == EASIG){
+        emite(EASIG, crArgPos(s.desp), crArgNul(), crArgPos($$.pos));
+        // }else{
+        //     emite($2, crArgPos(s.desp), crArgPos($$.pos), crArgPos($$.pos));
+        // }
+        // emite(EASIG, crArgPos($$.pos), crArgNul(), crArgPos(s.desp));
 	}
+    
     | ID_ CORCHETEA_ expresion CORCHETEC_ operadorAsignacion expresion PUNTOCOMA_
 	{
 		SIMB s = obtenerTDS($1);
@@ -123,7 +132,7 @@ instruccionAsignacion
 		else if ( !((s.telem == $6.tipo) && ($3.tipo == T_ENTERO) && (s.tipo == T_ARRAY) ) )
 			yyerror("Error del array en la 'instruccionAsignacion'");
 		else {
-            $$ = s.telem;
+            $$.tipo = s.telem;
         }
 	}
     ;
@@ -136,18 +145,17 @@ instruccionEntradaSalida
         else if (s.tipo != T_ENTERO)
             yyerror("READ es para Tipo Entero");
 
-        //GCI
-        emite(EREAD,crArgNul(),crArgNul(),crArgPos(s.desp));
-        //GCI
-        emite(EREAD,crArgNul(),crArgNul(),crArgPos(s.desp));
+            //GCI
+            emite(EREAD,crArgNul(),crArgNul(),crArgPos(s.desp));
 
         }
         
 
     | PRINT_ PARA_ expresion PARC_ PUNTOCOMA_
         {
-        if ($3.tipo != T_ENTERO)
-            yyerror("PRINT es para Tipo Entero");
+            if ($3.tipo != T_ENTERO){
+               // yyerror("PRINT es para Tipo Entero");
+            }
             //GCI
             emite(EWRITE, crArgNul(), crArgNul(), crArgPos($3.pos));
         }
@@ -170,33 +178,35 @@ instruccionSeleccion
             }
         instruccion
             {
-                completaLans($<cent>7, crArgEtq(si));
+                completaLans($<cent>8, crArgEtq(si));
             }
     ;
 
 instruccionIteracion
     : FOR_ PARA_ expresionOpcional PUNTOCOMA_
         {
+            //5
             $<cent>$ = si;
         }
 
     expresion PUNTOCOMA_
         {
-            $<cent>$ = creaLans(si); // Siguiente instruccion despues de 'instruccion'
+            //Final del for
+            $<cent>$ = creaLans(si); 
             emite(EIGUAL, crArgPos($6.pos), crArgEnt(FALSE), crArgEtq($<cent>$));
-        }
-        {
-            $<cent>$ = creaLans(si); // 'instruccion'
+            //Entrar en el bloque
+            $<cent>$ = creaLans(si); 
             emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<cent>$));
-        }
-        {
+           
             $<cent>$ = si;
         }
 
     expresionOpcional PARC_ 
         {
-            emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<cent>5));
-            completaLans($<cent>9, crArgEtq(si));
+            //Entrar a la condición
+            emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<cent>1));
+            //Rellena Entrar en el bloque
+            completaLans($<cent>3, crArgEtq(si));
         }
     instruccion
 	{
@@ -204,14 +214,15 @@ instruccionIteracion
 			yyerror("La Guarda del bucle for tiene que ser logica");
 			}
         
-        emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<cent>10));
-        completaLans($<cent>8, crArgEtq(si));
+        emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<cent>5));
+        //Rellena final de for
+        completaLans($<cent>2, crArgEtq(si));
         
 	}
     ;
 
 expresionOpcional
-    : expresion	{ $$.tipo = $1.tipo; $$.valor = $1.valor;}
+    : expresion	{ $$.tipo = $1.tipo; $$.valor = $1.valor;$$.pos = $1.pos;}
     | ID_ ASIG_ expresion
     { 	
         $$.tipo = T_ERROR;
@@ -231,7 +242,7 @@ expresionOpcional
     ;
 
 expresion
-    : expresionIgualdad { $$.tipo = $1.tipo; $$.valor = $1.valor;} 
+    : expresionIgualdad { $$.tipo = $1.tipo; $$.valor = $1.valor;$$.pos = $1.pos;} 
     | expresion operadorLogico expresionIgualdad 
 		{
             $$.tipo = T_ERROR;
@@ -253,12 +264,12 @@ expresion
             int overrideValue = $2 == OP_AND ? FALSE : TRUE;
             emite(EASIG, crArgPos($3.pos), crArgNul(), crArgPos($$.pos));
             emite(EDIST, crArgPos($1.pos), crArgEnt(overrideValue), crArgEtq(si + 2));
-            emite(EASIG, crArgEnt(overrideValue), crArgNul(), crArgPos($$.pos)); 
+            emite(EASIG, crArgEnt(overrideValue), crArgNul(), crArgPos($$.pos));
         }
     ;
 
 expresionIgualdad
-    : expresionRelacional { $$.tipo = $1.tipo; $$.valor = $1.valor;}
+    : expresionRelacional { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.pos = $1.pos;}
     | expresionIgualdad operadorIgualdad expresionRelacional
         {
             $$.tipo = T_ERROR;
@@ -316,7 +327,7 @@ expresionRelacional
     ;
 
 expresionAditiva 
-    : expresionMultiplicativa { $$.tipo = $1.tipo; $$.valor = $1.valor;}
+    : expresionMultiplicativa { $$.tipo = $1.tipo; $$.valor = $1.valor;  $$.pos = $1.pos; }
     | expresionAditiva operadorAditivo expresionMultiplicativa
 	{
 	$$.tipo = T_ERROR;
