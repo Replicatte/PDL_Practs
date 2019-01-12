@@ -268,11 +268,12 @@ expresionAditiva
 		}
 
         $$.pos = creaVarTemp();
-		emite($2, crArgPos($1.pos), crArgPos($3.pos), crArgPos($$.pos)); 
+		emite($2, crArgPos($1.pos), crArgPos($3.pos), crArgPos($$.pos));
+       } 
     ;
 
 expresionMultiplicativa
-    : expresionUnaria { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.pos = $1.pos}
+    : expresionUnaria { $$.tipo = $1.tipo; $$.valor = $1.valor; $$.pos = $1.pos;}
     | expresionMultiplicativa operadorMultiplicativo expresionUnaria
 	{ $$.tipo = T_ERROR;
         if ($1.tipo != T_ERROR && $3.tipo != T_ERROR) {
@@ -321,7 +322,7 @@ expresionUnaria
                     if ($1 == ESUM) {
                         $$.valor = $2.valor;
                     }
-                    if ($1 == DIF) {
+                    if ($1 == EDIF) {
                         $$.valor = -$2.valor;
                     }
                 }
@@ -384,8 +385,8 @@ expresionSufija
             }
             $$.pos = creaVarTemp();
             /* Copiamos el valor a $$.pos y luego lo incrementales */
-            emite(EASIG, crArgPos(simb.desp), crArgNul(), crArgPos($$.pos));
-            emite($2, crArgPos(simb.desp), crArgNul(), crArgPos($$.pos));
+            emite(EASIG, crArgPos(s.desp), crArgNul(), crArgPos($$.pos));
+            emite($2, crArgPos(s.desp), crArgNul(), crArgPos($$.pos));
         }
     | ID_ CORCHETEA_ expresion CORCHETEC_
         {
