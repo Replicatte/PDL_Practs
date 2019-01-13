@@ -1,0 +1,13 @@
+  0 EREAD             ,          ,  p:   0  
+  1 ESUM      p:   0  ,  p:   0  ,  p:   1  
+  2 EASIG     i:   5  ,          ,  p:   2  
+  3 EASIG     i:   3  ,          ,  p:   3  
+  4 RESTO     p:   2  ,  p:   3  ,  p:   4  
+  5 EMULT     p:   1  ,  p:   4  ,  p:   5  
+  6 EASIG     i:   2  ,          ,  p:   6  
+  7 EDIVI     p:   5  ,  p:   6  ,  p:   7  
+  8 EDIF      p:   7  ,  p:   0  ,  p:   8  
+  9 EMULT     p:   0  ,  p:   8  ,  p:   9  
+ 10 EASIG     p:   9  ,          ,  p:   0  
+ 11 EWRITE            ,          ,  p:   0  
+ 12 FIN               ,          ,          

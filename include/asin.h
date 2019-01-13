@@ -92,7 +92,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 15 "src/asin.y" /* yacc.c:1909  */
+#line 16 "src/asin.y" /* yacc.c:1909  */
 
     EXP exp;
     char* ident;

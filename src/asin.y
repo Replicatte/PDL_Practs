@@ -108,20 +108,21 @@ listaInstrucciones
 
 instruccionAsignacion
     : ID_ operadorAsignacion expresion PUNTOCOMA_
-	{ 	SIMB s = obtenerTDS($1);
+	{ 	
+        SIMB s = obtenerTDS($1);
 		if (s.tipo == T_ERROR) 
 			yyerror("Objeto no declarado");
 		else if ( !((s.tipo != T_ERROR) && (s.tipo == $3.tipo)) )
 			yyerror("Error de tipos en la 'instruccionAsignacion'");
 		else $$.tipo = s.tipo;
 
-        $$.pos = creaVarTemp();
-        // if($2 == EASIG){
-        emite(EASIG, crArgPos(s.desp), crArgNul(), crArgPos($$.pos));
-        // }else{
-        //     emite($2, crArgPos(s.desp), crArgPos($$.pos), crArgPos($$.pos));
-        // }
-        // emite(EASIG, crArgPos($$.pos), crArgNul(), crArgPos(s.desp));
+        $$.pos = s.desp;
+        if($2 == EASIG){
+            emite(EASIG, crArgPos(s.desp), crArgNul(), crArgPos($$.pos));
+        }else{
+            emite($2, crArgPos(s.desp), crArgPos($$.pos), crArgPos($$.pos));
+        }
+        emite(EASIG, crArgPos($$.pos), crArgNul(), crArgPos(s.desp));
 	}
     
     | ID_ CORCHETEA_ expresion CORCHETEC_ operadorAsignacion expresion PUNTOCOMA_
@@ -238,7 +239,7 @@ expresionOpcional
         emite(EASIG, crArgPos($$.pos), crArgNul(), crArgPos(s.desp)); 
     }
 /*Pegarle un vistazo ha esta expresion que no se me ocurre como puede ser (A = True && False) una cosa asi*/
-    | { $$.tipo = T_LOGICO; }
+    | { $$.tipo = T_ERROR; }
     ;
 
 expresion
@@ -494,22 +495,33 @@ expresionSufija
         $$.tipo = T_ERROR;
         if(s.tipo == T_ERROR){
             yyerror("Variable no declarada.");    
-        }else{$$.tipo = s.tipo;}
-        
+        }else{
+            $$.tipo = s.tipo;
+        }
+        $$.pos = s.desp;
     }
     | constante 
     {
 	
-         $$.valor = (int)$1.valor; //Casting para truncar el valor(da igual el tipo)
-         $$.tipo  = $1.tipo;
-	
+        $$.valor = (int)$1.valor; //Casting para truncar el valor(da igual el tipo)
+        $$.tipo  = $1.tipo;
+        $$.pos = $1.pos;
     }
     ;
 
 constante
-    : CTE_      { $$.valor = $<cent>1;	$$.tipo = T_ENTERO;}
-    | TRUE_     { $$.valor = TRUE;	$$.tipo = T_LOGICO;}
-    | FALSE_    { $$.valor = FALSE;	$$.tipo = T_LOGICO;}
+    : CTE_      {   $$.valor = (int)$<cent>1; //Casting para truncar el valor(da igual el tipo)
+                    $$.tipo  = T_ENTERO;
+                    $$.pos = creaVarTemp();
+                    emite(EASIG, crArgEnt($$.valor), crArgNul(), crArgPos($$.pos));}
+    | TRUE_     {   $$.valor = TRUE; //Casting para truncar el valor(da igual el tipo)
+                    $$.tipo  = T_LOGICO;
+                    $$.pos = creaVarTemp();
+                    emite(EASIG, crArgEnt($$.valor), crArgNul(), crArgPos($$.pos));}
+    | FALSE_    {   $$.valor = FALSE; //Casting para truncar el valor(da igual el tipo)
+                    $$.tipo  = T_LOGICO;
+                    $$.pos = creaVarTemp();
+                    emite(EASIG, crArgEnt($$.valor), crArgNul(), crArgPos($$.pos));}
     ;
 
 operadorAsignacion
