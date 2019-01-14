@@ -18,8 +18,7 @@
     char* ident;
     int cent;
 }
-
-%token <ident> ID_ 
+%token <ident> ID_
 %token <cent> CTE_
 %token MAS_ MENOS_ POR_ DIV_ ASIG_
 %token MENOR_ MAYOR_ MOD_ NOT_ AND_ OR_
@@ -34,7 +33,7 @@
 %type <cent> operadorMultiplicativo operadorUnario operadorAditivo operadorIncremento
 
 %type <exp> expresion expresionSufija expresionOpcional expresionIgualdad expresionRelacional instruccionAsignacion
-%type <exp> expresionAditiva expresionMultiplicativa expresionUnaria constante
+%type <exp> expresionAditiva expresionMultiplicativa expresionUnaria constante declaracion
 
 %%
 
@@ -64,6 +63,7 @@ declaracion
     }
     | tipoSimple ID_ ASIG_ constante PUNTOCOMA_
     {
+
         if ($1 != $4.tipo)
            yyerror ("Error de Tipos");
         else
@@ -72,7 +72,20 @@ declaracion
                 yyerror ("Identificador repetido");
             else dvar += TALLA_TIPO_SIMPLE;
          
-        } 
+        }
+
+        // $$.pos = buscaPos($2);
+
+        SIMB s = obtenerTDS($2);
+        $$.pos = s.desp;
+        //emite(EWRITE, crArgNul(), crArgNul(), crArgEnt(dvar)); 
+
+        emite(EASIG, crArgPos($4.pos), crArgNul(), crArgPos($$.pos));
+        emite(EASIG, crArgPos($$.pos), crArgNul(), crArgPos(s.desp));
+
+
+
+
     }
     | tipoSimple ID_ CORCHETEA_ CTE_ CORCHETEC_ PUNTOCOMA_ 
     {
@@ -116,11 +129,12 @@ instruccionAsignacion
 			yyerror("Error de tipos en la 'instruccionAsignacion'");
 		else $$.tipo = s.tipo;
 
-        $$.pos = s.desp;
+        $$.pos = creaVarTemp();
         if($2 == EASIG){
-            emite(EASIG, crArgPos(s.desp), crArgNul(), crArgPos($$.pos));
-        }else{
-            emite($2, crArgPos(s.desp), crArgPos($$.pos), crArgPos($$.pos));
+            emite(EASIG, crArgPos($3.pos), crArgNul(), crArgPos($$.pos));
+        }else {          
+            emite($2, crArgPos(s.desp), crArgPos($3.pos), crArgPos($$.pos));
+            
         }
         emite(EASIG, crArgPos($$.pos), crArgNul(), crArgPos(s.desp));
 	}
@@ -155,11 +169,13 @@ instruccionEntradaSalida
     | PRINT_ PARA_ expresion PARC_ PUNTOCOMA_
         {
             if ($3.tipo != T_ENTERO){
-               // yyerror("PRINT es para Tipo Entero");
+               yyerror("PRINT es para Tipo Entero");
             }
+	    else{
             //GCI
-            emite(EWRITE, crArgNul(), crArgNul(), crArgPos($3.pos-1)); //No se por que pero el Write apunta a la posicion siguiente a la variable ha printar y no a la de la propia variable
-        }
+            emite(EWRITE, crArgNul(), crArgNul(), crArgPos($3.pos));
+        }        
+    }
 
     ;
 
@@ -509,23 +525,20 @@ expresionSufija
 	
         $$.valor = (int)$1.valor; //Casting para truncar el valor(da igual el tipo)
         $$.tipo  = $1.tipo;
-        $$.pos = $1.pos;
+        $$.pos = creaVarTemp();
+        emite(EASIG, crArgEnt($$.valor), crArgNul(), crArgPos($$.pos));
     }
     ;
 
 constante
-    : CTE_      {   $$.valor = (int)$<cent>1; //Casting para truncar el valor(da igual el tipo)
+    : CTE_      {   $$.valor = $<cent>1; //Casting para truncar el valor(da igual el tipo)
                     $$.tipo  = T_ENTERO;
-                    $$.pos = creaVarTemp();
-                    emite(EASIG, crArgEnt($$.valor), crArgNul(), crArgPos($$.pos));}
+                    }
     | TRUE_     {   $$.valor = TRUE; //Casting para truncar el valor(da igual el tipo)
                     $$.tipo  = T_LOGICO;
-                    $$.pos = creaVarTemp();
-                    emite(EASIG, crArgEnt($$.valor), crArgNul(), crArgPos($$.pos));}
+                    }
     | FALSE_    {   $$.valor = FALSE; //Casting para truncar el valor(da igual el tipo)
-                    $$.tipo  = T_LOGICO;
-                    $$.pos = creaVarTemp();
-                    emite(EASIG, crArgEnt($$.valor), crArgNul(), crArgPos($$.pos));}
+                    $$.tipo  = T_LOGICO;}
     ;
 
 operadorAsignacion
