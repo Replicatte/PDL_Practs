@@ -158,7 +158,7 @@ instruccionEntradaSalida
                // yyerror("PRINT es para Tipo Entero");
             }
             //GCI
-            emite(EWRITE, crArgNul(), crArgNul(), crArgPos($3.pos));
+            emite(EWRITE, crArgNul(), crArgNul(), crArgPos($3.pos-1)); //No se por que pero el Write apunta a la posicion siguiente a la variable ha printar y no a la de la propia variable
         }
 
     ;
@@ -230,14 +230,18 @@ expresionOpcional
         SIMB s = obtenerTDS($1);
 		if (s.tipo == T_ERROR) 
 			yyerror("Objeto no declarado");
-		else if (!( (s.tipo == $3.tipo && s.tipo == T_ENTERO)||(s.tipo == $3.tipo && s.tipo == T_LOGICO) ))
-			yyerror("Error de tipos en la 'instruccionAsignacion'");
-		else $$.tipo = s.tipo;
-        
-        $$.pos = creaVarTemp();
-        emite(EASIG, crArgPos($3.pos), crArgNul(), crArgPos($$.pos));
-        emite(EASIG, crArgPos($$.pos), crArgNul(), crArgPos(s.desp)); 
-    }
+		else{
+			if (!( (s.tipo == $3.tipo && s.tipo == T_ENTERO)||(s.tipo == $3.tipo && s.tipo == T_LOGICO) ))
+				yyerror("Error de tipos en la 'instruccionAsignacion'");
+			else {
+					$$.tipo = s.tipo;
+			        $$.pos = creaVarTemp();
+					emite(EASIG, crArgPos($3.pos), crArgNul(), crArgPos($$.pos));
+					emite(EASIG, crArgPos($$.pos), crArgNul(), crArgPos(s.desp));
+			}
+		}
+         
+    }// Ahora solo hace emite si y solo si $3.tipo == s.tipo y los tipos != T_ERROR
 /*Pegarle un vistazo ha esta expresion que no se me ocurre como puede ser (A = True && False) una cosa asi*/
     | { $$.tipo = T_ERROR; }
     ;
