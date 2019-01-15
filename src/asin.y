@@ -93,7 +93,10 @@ declaracion
             }
         if ( !insTVectorTDS($2, T_ARRAY, dvar, $1, numelem) )
             yyerror ("Identificador repetido");
-        else dvar += numelem * TALLA_TIPO_SIMPLE;}
+        else dvar += numelem * TALLA_TIPO_SIMPLE;
+
+        
+    }
     ;
 
 tipoSimple
@@ -505,7 +508,7 @@ expresionSufija
             else if($3.tipo != T_ENTERO)
                 yyerror("Error de tipos para el array");
             else {
-                if($3.tipo == T_ENTERO && (($3.valor < 0) || ($3.valor >= simb.nelem))){
+                if($3.tipo != T_ENTERO && (($3.valor < 0) || ($3.valor >= simb.nelem))){
                    yyerror("Indice invalido para el array");
                 }else{
                     $$.tipo = simb.telem; }
