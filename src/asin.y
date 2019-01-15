@@ -217,9 +217,9 @@ instruccionIteracion
     expresionOpcional PARC_ 
         {
             //Entrar a la condición
-            emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<cent>1));
+            emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<cent>5));
             //Rellena Entrar en el bloque
-            completaLans($<cent>3, crArgEtq(si));
+            completaLans($<cent>9, crArgEtq(si));
         }
     instruccion
 	{
@@ -227,9 +227,9 @@ instruccionIteracion
 			yyerror("La Guarda del bucle for tiene que ser logica");
 			}
         
-        emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<cent>5));
+        emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<cent>10));
         //Rellena final de for
-        completaLans($<cent>2, crArgEtq(si));
+        completaLans($<cent>8, crArgEtq(si));
         
 	}
     ;
@@ -459,10 +459,9 @@ expresionUnaria
             $$.tipo = simb.tipo;
         }
 
-        $$.pos = creaVarTemp();
-		/* Primero se incrementa/decrementa y luego se copia a $$.pos */
-		emite($1, crArgPos(simb.desp), crArgEnt(1), crArgPos(simb.desp));
-		emite(EASIG, crArgPos(simb.desp), crArgNul(),  crArgPos($$.pos));
+
+		emite($1, crArgPos(simb.desp), crArgEnt(1), crArgPos($$.pos));
+        emite($1, crArgPos(simb.desp), crArgEnt(1), crArgPos(simb.desp));
     }
     ;
 
@@ -479,10 +478,8 @@ expresionSufija
             }else{
                 $$.tipo = s.tipo;   
             }
-            $$.pos = creaVarTemp();
-            /* Copiamos el valor a $$.pos y luego lo incrementales */
-            emite(EASIG, crArgPos(s.desp), crArgNul(), crArgPos($$.pos));
-            emite($2, crArgPos(s.desp), crArgNul(), crArgPos($$.pos));
+   
+            emite($2, crArgPos(s.desp), crArgEnt(1), crArgPos(s.desp));
         }
     | ID_ CORCHETEA_ expresion CORCHETEC_
         {
