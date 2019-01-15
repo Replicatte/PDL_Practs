@@ -71,17 +71,13 @@ declaracion
             if ( !insTSimpleTDS($2,$1,dvar) )
                 yyerror ("Identificador repetido");
             else dvar += TALLA_TIPO_SIMPLE;
+        
+        SIMB s = obtenerTDS($2);
+
+        emite(EASIG, crArgPos($4.pos), crArgNul(), crArgPos(s.desp));
          
         }
 
-        // $$.pos = buscaPos($2);
-
-        SIMB s = obtenerTDS($2);
-        $$.pos = s.desp;
-        //emite(EWRITE, crArgNul(), crArgNul(), crArgEnt(dvar)); 
-
-        emite(EASIG, crArgPos($4.pos), crArgNul(), crArgPos($$.pos));
-        emite(EASIG, crArgPos($$.pos), crArgNul(), crArgPos(s.desp));
 
 
 
@@ -523,22 +519,26 @@ expresionSufija
     | constante 
     {
 	
-        $$.valor = (int)$1.valor; //Casting para truncar el valor(da igual el tipo)
-        $$.tipo  = $1.tipo;
-        $$.pos = creaVarTemp();
-        emite(EASIG, crArgEnt($$.valor), crArgNul(), crArgPos($$.pos));
+        $$ = $1;
     }
     ;
 
 constante
-    : CTE_      {   $$.valor = $<cent>1; //Casting para truncar el valor(da igual el tipo)
+    : CTE_      {   
                     $$.tipo  = T_ENTERO;
+                    $$.pos = creaVarTemp();
+                    emite(EASIG, crArgEnt($1), crArgNul(), crArgPos($$.pos));
                     }
-    | TRUE_     {   $$.valor = TRUE; //Casting para truncar el valor(da igual el tipo)
+    | TRUE_     {   
                     $$.tipo  = T_LOGICO;
+                    $$.pos = creaVarTemp();
+                    emite(EASIG, crArgEnt(TRUE), crArgNul(), crArgPos($$.pos));
                     }
-    | FALSE_    {   $$.valor = FALSE; //Casting para truncar el valor(da igual el tipo)
-                    $$.tipo  = T_LOGICO;}
+    | FALSE_    {   
+                    $$.tipo  = T_LOGICO;
+                    $$.pos = creaVarTemp();
+                    emite(EASIG, crArgEnt(FALSE), crArgNul(), crArgPos($$.pos));
+                }
     ;
 
 operadorAsignacion
