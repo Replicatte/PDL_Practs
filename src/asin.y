@@ -145,6 +145,16 @@ instruccionAsignacion
 		else {
             $$.tipo = s.telem;
         }
+        
+        $$.pos = creaVarTemp();
+        if ($5 != EASIG) {
+            emite(EAV, crArgPos(s.desp), crArgPos($3.pos), crArgPos($$.pos));
+            emite($5, crArgPos($$.pos), crArgPos($6.pos), crArgPos($$.pos));
+        } else {
+            emite($5, crArgPos($6.pos), crArgNul(), crArgPos($$.pos));
+        }
+        emite(EVA, crArgPos(s.desp), crArgPos($3.pos), crArgPos($$.pos));        
+
 	}
     ;
 
@@ -207,10 +217,13 @@ instruccionIteracion
             //Final del for
             $<cent>$ = creaLans(si); 
             emite(EIGUAL, crArgPos($6.pos), crArgEnt(FALSE), crArgEtq($<cent>$));
+        }
+        {
             //Entrar en el bloque
             $<cent>$ = creaLans(si); 
             emite(GOTOS, crArgNul(), crArgNul(), crArgEtq($<cent>$));
-           
+        }
+        {       
             $<cent>$ = si;
         }
 
@@ -490,7 +503,7 @@ expresionSufija
             }else if ( simb.tipo != T_ARRAY){
                 yyerror("La variable no es un array, no se pueden poner indices");}
             else if($3.tipo != T_ENTERO)
-                yyerror("Indice invalido para el array");
+                yyerror("Error de tipos para el array");
             else {
                 if($3.tipo == T_ENTERO && (($3.valor < 0) || ($3.valor >= simb.nelem))){
                    yyerror("Indice invalido para el array");
